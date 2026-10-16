@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "tanstack-start",
+  "installCommand": "npx --yes pnpm@11.25.0 install --frozen-lockfile",
+  "buildCommand": "npm run build"
+}
