@@ -107,7 +107,7 @@ export const Route = createFileRoute("/checkout")({
     meta: [
       { title: "Secure Checkout — Perfect Buy" },
       { name: "description", content: "Review your Perfect Buy cart and pay securely with Yoco." },
-      { name: "robots", content: "noindex, nofollow" },
+      { name: "robots", content: "noindex, follow" },
     ],
   }),
   component: CheckoutPage,

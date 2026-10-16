@@ -20,7 +20,7 @@ npx pnpm@11.25.0 run dev
 
 | Variable          | Purpose                                                                                                                                                                                       |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_SITE_URL`   | Public canonical URL, such as your final custom domain. Used for metadata and generated sitemap links. If unset on Vercel, the build uses `VERCEL_PROJECT_PRODUCTION_URL`, then `VERCEL_URL`. |
+| `VITE_SITE_URL`   | Public canonical origin for metadata and sitemap links. Defaults to `https://perfectbuy.co.za`, including on preview deployments, so copies point to the live store. |
 | `PUBLIC_SITE_URL` | Full public origin used for payment return URLs. Set it to the final production website URL. If unset, checkout uses the incoming request's origin.                                           |
 | `YOCO_SECRET_KEY` | Yoco server-side API secret, required to start payments. Configure it in Vercel only; use a test key for testing. Never prefix it with `VITE_`.                                               |
 
@@ -77,3 +77,20 @@ Sharp module. Commit the generated `public/image-sizes` files and
 The homepage uses `hero-video-light.mp4` (720p H.264, 24 fps, no audio, fast-start),
 starting after the initial page loads. Data saving, 2G and reduced-motion preferences
 keep the still poster. The original video is retained for future editing.
+
+## Search and indexing
+
+The canonical store is `https://perfectbuy.co.za/`. The cPanel configuration redirects
+HTTP, www, explicit page `.html` URLs and collection trailing slashes to canonical URLs.
+Unknown pages return HTTP 404; checkout is marked `noindex, follow`.
+
+The sitemap is generated from the real catalog, collections and blog data and includes
+product images. It excludes checkout and does not invent modification dates on every
+build. Rebuild and upload the pages, sitemap, robots file and assets after content edits.
+The focused fashion collections are `/shop/footwear` and `/shop/womens-clothing`.
+
+Keep `public/google5fca805106f6108d.html` in all deployments: it is Google's public
+ownership-verification file for the House of Creatives Search Console account.
+Public customer contact details are maintained in `src/lib/site.ts`.
+Do not add invented reviews, ratings, shipping guarantees, brand identifiers or return
+policies to structured data. Confirm real commercial details before adding them.

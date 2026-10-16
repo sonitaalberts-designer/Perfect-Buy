@@ -3,22 +3,22 @@ import { ArrowRight, Sparkles, SlidersHorizontal, ShieldCheck } from "lucide-rea
 
 import { useEffect, useState } from "react";
 import { StoreHeader } from "@/components/StoreHeader";
-import { categories as shopCategories, products } from "@/lib/catalog";
+import { categories as shopCategories, fashionCollections, products } from "@/lib/catalog";
 import heroPink from "@/assets/hero-pink.jpg";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreFooter } from "@/components/StoreFooter";
-import { absoluteUrl, SITE_URL } from "@/lib/site";
+import { absoluteUrl, SITE_URL, supportPhoneInternational, supportWhatsApp } from "@/lib/site";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Perfect Buy — Shop Smart, Choose Perfect" },
+      { title: "Perfect Buy | Women's Sneakers & Pajamas South Africa" },
       {
         name: "description",
         content:
-          "Perfect Buy is a South African online store for affordable fashion, playful picks and useful everyday finds. Find your next favourite.",
+          "Shop women's sneakers, White Timeless pajama sets, gifts and everyday finds at Perfect Buy South Africa. Compare styles, sizes and prices online.",
       },
-      { property: "og:title", content: "Perfect Buy — Shop Smart, Choose Perfect" },
+      { property: "og:title", content: "Perfect Buy | Women's Sneakers & Pajamas South Africa" },
       {
         property: "og:description",
         content:
@@ -102,11 +102,21 @@ function Home() {
             "@context": "https://schema.org",
             "@graph": [
               {
-                "@type": "Organization",
+                "@type": "OnlineStore",
                 "@id": `${SITE_URL}/#organization`,
                 name: "Perfect Buy",
                 url: SITE_URL,
                 logo: absoluteUrl("/perfect-buy-logo-wide.webp"),
+                telephone: supportPhoneInternational,
+                areaServed: { "@type": "Country", name: "South Africa" },
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  telephone: supportPhoneInternational,
+                  contactType: "customer service",
+                  availableLanguage: "English",
+                  areaServed: "ZA",
+                  url: absoluteUrl("/contact"),
+                },
               },
               {
                 "@type": "WebSite",
@@ -225,6 +235,32 @@ function Home() {
             ))}
           </div>
         </div>
+
+        <section
+          className="shell border-b border-border py-10 md:py-14"
+          aria-labelledby="fashion-collections-heading"
+        >
+          <h2 id="fashion-collections-heading" className="text-2xl sm:text-3xl">
+            Women's sneakers and pajama sets in South Africa
+          </h2>
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
+            Explore statement sneakers and relaxed White Timeless pajama sets. Compare each style's
+            photos, listed sizes and price, or contact Perfect Buy for help choosing your next
+            favourite.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            {fashionCollections.map((collection) => (
+              <Link
+                key={collection.slug}
+                to="/shop/$category"
+                params={{ category: collection.slug }}
+                className="btn-base btn-pink rounded-full px-6"
+              >
+                Shop {collection.name.toLowerCase()} <ArrowRight className="size-4" />
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Cosy nights and Christmas sparkle */}
         <section className="shell py-12 md:py-24">
@@ -418,24 +454,12 @@ function Home() {
                 Get First Dibs on New Finds.
               </h2>
               <p className="mt-4 max-w-md text-sm text-secondary-foreground/70">
-                Join the Perfect Buy list for new arrivals, product picks and store updates.
+                Ask us about new arrivals, product picks and available sizes on WhatsApp.
               </p>
             </div>
-            <form className="flex flex-col gap-3 sm:flex-row" onSubmit={(e) => e.preventDefault()}>
-              <label htmlFor="news" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="news"
-                type="email"
-                required
-                placeholder="you@email.co.za"
-                className="h-14 min-h-14 w-full rounded-md bg-background px-4 text-base outline-none focus:ring-2 focus:ring-primary sm:flex-1"
-              />
-              <button type="submit" className="btn-base btn-pink h-12">
-                Sign me up
-              </button>
-            </form>
+            <a href={supportWhatsApp} className="btn-base btn-pink h-14 w-fit px-8">
+              Chat about new arrivals
+            </a>
           </div>
         </section>
       </main>

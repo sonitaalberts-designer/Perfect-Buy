@@ -58,8 +58,7 @@ export const products: Product[] = [
     id: "red-velvet-perfume-35ml",
     name: "Red Velvet Eau de Parfum — 35ml",
     price: 25,
-    description:
-      "A rich Red Velvet eau de parfum natural spray in a compact 35ml bottle.",
+    description: "A rich Red Velvet eau de parfum natural spray in a compact 35ml bottle.",
     images: ["/products/red-velvet-perfume-35ml.jpg"],
     category: "perfumes",
   },
@@ -67,8 +66,7 @@ export const products: Product[] = [
     id: "kunafa-chocolate-perfume-35ml",
     name: "Kunafa Chocolate Eau de Parfum — 35ml",
     price: 25,
-    description:
-      "A Kunafa Chocolate eau de parfum natural spray in a compact 35ml bottle.",
+    description: "A Kunafa Chocolate eau de parfum natural spray in a compact 35ml bottle.",
     images: ["/products/kunafa-chocolate-perfume-35ml.jpg"],
     category: "perfumes",
   },
@@ -119,7 +117,7 @@ export const products: Product[] = [
   },
   {
     id: "swarovski-blinged-nike-air-max-27c-full-pink",
-    name: "Swarovski Blinged Nike Air Max",
+    name: "Swarovski Blinged Nike Air Max — Full Pink",
     price: 7650,
     description:
       "A vivid full-pink Air Max style finished with sparkling crystal details for a bold statement look.",
@@ -334,7 +332,7 @@ export const products: Product[] = [
   },
   {
     id: "swarovski-blinged-nike-air-max-27c",
-    name: "Swarovski Blinged Nike Air Max",
+    name: "Swarovski Blinged Nike Air Max — White & Black",
     price: 6685,
     description:
       "A white and black Air Max style customised with sparkling crystal details and a sculpted air-cushion profile.",
@@ -683,11 +681,30 @@ export const categories: Category[] = [
   },
 ];
 
+// Focused collections share the catalog, with their own canonical pages.
+export const fashionCollections: Category[] = [
+  {
+    slug: "footwear",
+    name: "Women's Sneakers",
+    note: "Statement styles & everyday pairs",
+    blurb:
+      "Shop women's sneakers in South Africa, from pink and crystal-detail pairs to butterfly designs. Compare photos, prices and listed sizes before you order.",
+    img: photo("swarovski-blinged-nike-air-max-27c-full-pink"),
+  },
+  {
+    slug: "womens-clothing",
+    name: "Women's Pajama Sets",
+    note: "White Timeless sleepwear",
+    blurb:
+      "Shop women's pajama sets in South Africa. Compare White Timeless striped and cheeta-print sets, view matching pieces and check the available sizes.",
+    img: photo("striped-pajamas-front"),
+  },
+];
+
 export const desktopCategories = categories.filter((category) => !category.mobileMenuOnly);
 
 export function getCategory(slug: string): Category | undefined {
-  const resolvedSlug = slug === "footwear" || slug === "womens-clothing" ? "attire" : slug;
-  return categories.find((category) => category.slug === resolvedSlug);
+  return [...categories, ...fashionCollections].find((category) => category.slug === slug);
 }
 export function productsFor(slug: CategorySlug): Product[] {
   if (slug === "new-arrivals") return products;
@@ -708,9 +725,7 @@ export function getProduct(id: string): Product | undefined {
 }
 
 export function categorySlugForProduct(product: Product): CategorySlug {
-  return product.category === "footwear" || product.category === "womens-clothing"
-    ? "attire"
-    : product.category;
+  return product.category;
 }
 
 export function productDescription(product: Product): string {

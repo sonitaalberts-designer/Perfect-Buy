@@ -5,32 +5,37 @@ import { blogPosts } from "@/lib/blog";
 import { absoluteUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/blog")({
-  head: () => ({
-    meta: [
-      { title: "Shopping Guides: Sneakers, Gummies & Toys | Perfect Buy" },
-      {
-        name: "description",
-        content:
-          "Explore Perfect Buy guides to women's Nike sneakers, wellness gummies, squishy toys and trending products for South African shoppers.",
-      },
-      {
-        property: "og:title",
-        content: "Shopping Guides: Sneakers, Gummies & Toys | Perfect Buy",
-      },
-      {
-        property: "og:description",
-        content:
-          "Useful guides to women's sneakers, wellness gummies, squishy toys and trending products in South Africa.",
-      },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:image",
-        content: absoluteUrl("/blog/trending-products-south-africa.webp"),
-      },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: absoluteUrl("/blog") }],
-  }),
+  // The parent route also wraps articles. Only the index should emit its
+  // canonical; each article owns its own metadata and canonical URL.
+  head: ({ matches }) =>
+    matches.some((match) => "slug" in match.params)
+      ? {}
+      : {
+          meta: [
+            { title: "Sneaker & Pajama Shopping Guides | Perfect Buy South Africa" },
+            {
+              name: "description",
+              content:
+                "Read Perfect Buy's sneaker and pajama buying guides, plus gift ideas and product comparisons for South African shoppers.",
+            },
+            {
+              property: "og:title",
+              content: "Sneaker & Pajama Shopping Guides | Perfect Buy South Africa",
+            },
+            {
+              property: "og:description",
+              content:
+                "Useful guides to women's sneakers, wellness gummies, squishy toys and trending products in South Africa.",
+            },
+            { property: "og:type", content: "website" },
+            {
+              property: "og:image",
+              content: absoluteUrl("/blog/trending-products-south-africa.webp"),
+            },
+            { name: "twitter:card", content: "summary_large_image" },
+          ],
+          links: [{ rel: "canonical", href: absoluteUrl("/blog") }],
+        },
   component: BlogPage,
 });
 

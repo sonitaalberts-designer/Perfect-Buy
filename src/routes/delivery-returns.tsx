@@ -3,7 +3,7 @@ import { InformationPage, InformationSection } from "@/components/InformationPag
 import { pageHead } from "@/lib/site";
 
 const description =
-  "Read Perfect Buy's pre-launch guidance about delivery arrangements, order checks, returns and damaged items in South Africa.";
+  "Find delivery and returns guidance for Perfect Buy orders in South Africa. Contact us to confirm delivery costs, timing and return instructions.";
 
 export const Route = createFileRoute("/delivery-returns")({
   head: () =>
@@ -16,7 +16,7 @@ function DeliveryReturnsPage() {
     <InformationPage
       eyebrow="Shopping help"
       title="Delivery and returns, explained clearly."
-      intro="This page sets out the current pre-launch process. Final delivery fees, service levels and return instructions will be confirmed before the official domain opens for public orders."
+      intro="Before ordering, contact Perfect Buy on 071 463 2853 to confirm delivery availability, the fee and estimated timing for your address. Keep your order details for delivery or return enquiries."
     >
       <InformationSection title="Delivery arrangements">
         <p>

@@ -3,7 +3,7 @@ import { InformationPage, InformationSection } from "@/components/InformationPag
 import { pageHead } from "@/lib/site";
 
 const description =
-  "Read the pre-launch terms covering product information, pricing, availability, checkout and responsible use of Perfect Buy.";
+  "Read the terms covering product information, pricing, availability, checkout and responsible use of Perfect Buy.";
 
 export const Route = createFileRoute("/terms")({
   head: () => pageHead("Terms of Service | Perfect Buy", description, "/terms"),
@@ -15,7 +15,7 @@ function TermsPage() {
     <InformationPage
       eyebrow="Store terms"
       title="Clear expectations for using Perfect Buy."
-      intro="These pre-launch terms explain how product information, pricing and checkout work. Final business details and launch-effective dates will be added with the official domain."
+      intro="These terms explain how product information, pricing and checkout work. Contact Perfect Buy on 071 463 2853 with a question before placing an order."
     >
       <InformationSection title="Products, prices and availability">
         <p>

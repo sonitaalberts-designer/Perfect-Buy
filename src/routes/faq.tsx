@@ -16,15 +16,15 @@ export const Route = createFileRoute("/faq")({
 const faqs = [
   {
     q: "What is Perfect Buy?",
-    a: "Perfect Buy is a South African online store selling a rotating selection of trending products — from women's fashion and summer dresses to squishy toys, home and lifestyle finds. New items land regularly and favourites can sell out fast.",
+    a: "Perfect Buy is a South African online store with women's sneakers, White Timeless pajama sets, gifts, toys, wellness products and everyday accessories. Browse individual product pages for photos, prices and available options.",
   },
   {
     q: "Where do you deliver?",
-    a: "Perfect Buy is a South African store and delivers within South Africa. Delivery options and costs are shown at checkout before you pay, so there are no surprises.",
+    a: "We arrange delivery within South Africa. Contact Perfect Buy on 071 463 2853 before paying to confirm the delivery fee, availability and estimated timing for your address.",
   },
   {
     q: "How do I know if something is in stock?",
-    a: "If you can add an item to your cart, it's available. Because our catalogue rotates, popular items can sell out — if something you love is out of stock, check back soon or contact us and we'll let you know if it's coming back.",
+    a: "Product pages show the options currently listed in our catalog. Contact us to confirm availability for the exact item, size and colour before ordering.",
   },
   {
     q: "What payment methods do you accept?",
@@ -40,11 +40,11 @@ const faqs = [
   },
   {
     q: "How often do you add new products?",
-    a: "All the time! Our range changes regularly as trends come and go. Follow the New Arrivals section or join the newsletter to hear about new drops first.",
+    a: "Browse the New Arrivals collection for the current range, or contact us on WhatsApp if you are looking for a particular style or size.",
   },
   {
     q: "How can I contact you?",
-    a: "You can reach us through the contact details in the footer of our shop. We're happy to help with orders, product questions or suggestions for what we should stock next.",
+    a: "Call or WhatsApp Perfect Buy on 071 463 2853 for help with products, sizes, availability, delivery or existing orders. Include the product name or order reference in your message.",
   },
 ];
 
@@ -101,8 +101,8 @@ function FaqPage() {
         </div>
 
         <p className="mt-8 text-xs text-muted-foreground">
-          Note: this is a brand preview — full delivery, returns and payment policies will be
-          confirmed here once the live store is connected.
+          For questions about your specific order, contact Perfect Buy before making payment or
+          returning a parcel.
         </p>
       </main>
       <StoreFooter />

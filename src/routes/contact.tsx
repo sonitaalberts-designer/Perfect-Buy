@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { InformationPage, InformationSection } from "@/components/InformationPage";
-import { pageHead } from "@/lib/site";
+import { pageHead, supportPhone, supportPhoneInternational, supportWhatsApp } from "@/lib/site";
 
 const description =
   "Find out how to contact Perfect Buy about orders, products, delivery, returns and general shopping questions.";
@@ -15,8 +15,29 @@ function ContactPage() {
     <InformationPage
       eyebrow="Customer help"
       title="We’re here to help you shop with confidence."
-      intro="Use your order confirmation as the starting point for order-specific help, and keep the product name or order reference ready."
+      intro="Contact Perfect Buy for help with sneaker sizes, pajama sets, product availability, delivery and existing orders. Keep the product name or order reference ready so we can help."
     >
+      <InformationSection title="Call or WhatsApp Perfect Buy">
+        <p>
+          Speak to our team on{" "}
+          <a
+            className="font-semibold text-primary underline"
+            href={`tel:${supportPhoneInternational}`}
+          >
+            {supportPhone}
+          </a>{" "}
+          or{" "}
+          <a className="font-semibold text-primary underline" href={supportWhatsApp}>
+            send us a WhatsApp message
+          </a>
+          .
+        </p>
+        <p>
+          Please include the exact product name, your size or colour question, and your delivery
+          area when relevant. For existing orders, include your order reference. Never send card
+          details, passwords or banking PINs.
+        </p>
+      </InformationSection>
       <InformationSection title="Order enquiries">
         <p>
           For help with an existing order, reply through the contact channel provided with your
@@ -30,14 +51,6 @@ function ContactPage() {
           Check the product page first for available sizes, colours, pricing and product-specific
           information. If something important is missing, note the exact product name so the team
           can respond accurately.
-        </p>
-      </InformationSection>
-
-      <InformationSection title="Before the official launch">
-        <p>
-          Perfect Buy’s primary support email and final business contact details will be published
-          here when the official domain is connected. This pre-launch page is already in place so
-          search engines and shoppers have a stable contact URL from day one.
         </p>
       </InformationSection>
     </InformationPage>

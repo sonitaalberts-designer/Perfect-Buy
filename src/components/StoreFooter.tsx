@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { desktopCategories } from "@/lib/catalog";
+import { desktopCategories, fashionCollections } from "@/lib/catalog";
+import { supportPhone, supportPhoneInternational, supportWhatsApp } from "@/lib/site";
 
 const linkClass = "text-sm text-muted-foreground transition-colors hover:text-primary";
 
@@ -23,6 +24,21 @@ export function StoreFooter() {
             Shop Smart, Choose Perfect. A South African online store for curated fashion, playful
             gifts, wellness products and useful everyday finds.
           </p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Customer help:{" "}
+            <a
+              className="font-semibold text-primary hover:underline"
+              href={`tel:${supportPhoneInternational}`}
+            >
+              {supportPhone}
+            </a>
+          </p>
+          <a
+            href={supportWhatsApp}
+            className="mt-2 inline-block text-sm font-semibold text-primary hover:underline"
+          >
+            Chat with Perfect Buy on WhatsApp
+          </a>
         </div>
 
         <div>
@@ -33,7 +49,7 @@ export function StoreFooter() {
                 Shop All
               </Link>
             </li>
-            {desktopCategories.map((category) => (
+            {[...fashionCollections, ...desktopCategories].map((category) => (
               <li key={category.slug}>
                 <Link
                   to="/shop/$category"

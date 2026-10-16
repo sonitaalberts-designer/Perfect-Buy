@@ -6,6 +6,7 @@ export type BlogPost = {
   excerpt: string;
   date: string;
   datePublished: string;
+  dateModified?: string;
   readingTime: string;
   tag: string;
   image: string;
@@ -14,12 +15,46 @@ export type BlogPost = {
   contentHeading: string;
   keywords: string[];
   featuredProductIds: string[];
-  categorySlug: "new-arrivals" | "attire" | "health-wellness" | "gifts-toys";
+  categorySlug:
+    "new-arrivals" | "attire" | "footwear" | "womens-clothing" | "health-wellness" | "gifts-toys";
   categoryLabel: string;
   body: string[];
 };
 
 export const blogPosts: BlogPost[] = [
+  {
+    slug: "womens-pajama-sets-south-africa",
+    title: "Striped or Cheeta Print? Choosing a Women's Pajama Set",
+    seoTitle: "Women's Pajama Sets South Africa: A Buying Guide | Perfect Buy",
+    seoDescription:
+      "Compare White Timeless striped and cheeta-print pajama sets. Check the design, listed sizes, matching pieces and delivery details before ordering.",
+    excerpt:
+      "A practical comparison of the White Timeless striped and cheeta-print sets, with tips for choosing your size and checking an online listing.",
+    date: "October 2026",
+    datePublished: "2026-10-16",
+    readingTime: "2 min read",
+    tag: "Pajama guide",
+    image: "/fashion-feature-pajamas.webp",
+    imageAlt: "White Timeless striped pajama set fashion feature",
+    linkLabel: "Compare women's pajama sets",
+    contentHeading: "Start with the design and matching pieces",
+    keywords: [
+      "women's pajama sets South Africa",
+      "White Timeless pajamas",
+      "striped pajama set",
+      "cheetah print pajamas",
+    ],
+    featuredProductIds: ["striped-pajamas", "cheeta-pajamas"],
+    categorySlug: "womens-clothing",
+    categoryLabel: "women's pajama sets",
+    body: [
+      "When choosing women's pajama sets online in South Africa, compare the actual product photos and set description before deciding on a print. Perfect Buy's White Timeless range includes a subtle striped design and a white-and-grey cheeta-print design. Both listings describe a lightweight short-sleeve button-up set, but their visual details differ.",
+      "The striped set has a quieter appearance, with subtle white stripes and relaxed matching shorts. If you prefer a simple, coordinated look, start with those product images. The cheeta-print set has a more noticeable pattern and dark piping around its edges. Look through the front and detail photos to see which finish you prefer rather than relying on the collection thumbnail alone.",
+      "Check the size selector on the exact set you want. The sizes listed for one design may differ from the other. Compare the cut with sleepwear that you already find comfortable; a size letter by itself cannot tell you how a garment will feel. If you need measurements or more information about fit, contact Perfect Buy before placing an order.",
+      "For a gift, check the recipient's usual sleepwear size and preferences first. A matching set should suit the person who will wear it, including whether they prefer a quieter stripe or a bolder print. Do not assume the photos confirm fabric composition or washing instructions: ask for any missing product details and follow the label supplied with the garment.",
+      "Finally, open the current product page to confirm the price and listed options. Contact Perfect Buy on 071 463 2853 to confirm availability, delivery costs and estimated timing for your address before paying. Keep the product name and order reference for follow-up questions. You can compare both designs below or browse the full women's pajama collection.",
+    ],
+  },
   {
     slug: "how-we-pick-trending-products",
     title: "Trending Products in South Africa: How We Pick the Next Big Find",
@@ -68,6 +103,7 @@ export const blogPosts: BlogPost[] = [
       "From pink statement pairs to crisp white classics, use this guide to compare women's sneaker styles before choosing your pair.",
     date: "October 2026",
     datePublished: "2026-10-13",
+    dateModified: "2026-10-16",
     readingTime: "5 min read",
     tag: "Sneaker guide",
     image: "/blog/nike-sneakers-women-south-africa.webp",
@@ -88,15 +124,15 @@ export const blogPosts: BlogPost[] = [
       "rose-gold-air-max-27c-swarovski",
       "butterfly-af1",
     ],
-    categorySlug: "attire",
-    categoryLabel: "attire",
+    categorySlug: "footwear",
+    categoryLabel: "women's sneakers",
     body: [
       "Nike sneakers for women can be sporty, minimal or completely statement-making. Before choosing a pair, think about where you will wear it most: everyday errands, casual outfits, long days on your feet or occasions when the shoes are meant to be the focus.",
       "Nike Air Max sneakers are known for a chunkier profile and visible cushioning, which works well with leggings, denim and relaxed matching sets. Nike Air Force styles offer a cleaner low-top shape that pairs easily with dresses, shorts and wide-leg trousers. The best silhouette is the one that fits your wardrobe rather than a single trend.",
       "Colour changes the whole mood. White women's Nike sneakers are easy to repeat across outfits, while black and white pairs create a stronger contrast. Pink Nike sneakers, crystal details and butterfly accents are made for shoppers who want their footwear to stand out.",
       "Sizing deserves a careful look when buying Nike sneakers in South Africa online. Check the available size selector on the product page, compare it with footwear you already own and read every product-specific note before ordering. A familiar brand name does not replace checking the details for that exact style.",
       "Materials and embellishments also affect care. Wipe smooth sections with a soft damp cloth, use a gentle brush on mesh and avoid soaking crystal or decorative details. Let sneakers dry naturally away from direct heat so the shape and finish last longer.",
-      "Whether you search for Nike sneakers for ladies, women's Nike sneakers or a specific Air Max look, start with fit and function, then choose the colour and finish that feels most like you. Perfect Buy's Attire collection brings footwear and easy clothing together so you can build the full look in one browse.",
+      "Start with fit and function, then choose the colour and finish that feels most like you. Browse Perfect Buy's women's sneaker collection to compare the current styles, photos, prices and listed sizes. Contact us with any questions about the exact pair before ordering.",
     ],
   },
   {

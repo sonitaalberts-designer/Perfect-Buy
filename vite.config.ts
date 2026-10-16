@@ -6,11 +6,8 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const vercelHostname = process.env["VERCEL_PROJECT_PRODUCTION_URL"] || process.env["VERCEL_URL"];
 const siteUrl =
-  process.env["VITE_SITE_URL"] ||
-  process.env["PUBLIC_SITE_URL"] ||
-  (vercelHostname ? `https://${vercelHostname}` : undefined);
+  process.env["VITE_SITE_URL"] || process.env["PUBLIC_SITE_URL"] || "https://perfectbuy.co.za";
 
 const baseConfig = {
   ...(siteUrl

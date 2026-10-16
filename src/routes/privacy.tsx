@@ -15,7 +15,7 @@ function PrivacyPage() {
     <InformationPage
       eyebrow="Your information"
       title="Privacy at Perfect Buy."
-      intro="This pre-launch privacy notice explains the information used to operate the store and complete a customer-requested purchase."
+      intro="This privacy notice explains the information used to operate the store and complete a customer-requested purchase."
     >
       <InformationSection title="Information used for orders">
         <p>
@@ -42,8 +42,8 @@ function PrivacyPage() {
           passwords or complete banking credentials in a support message.
         </p>
         <p>
-          The final business contact and privacy-request channel will be added when the official
-          domain is connected.
+          For a privacy question or a request about your information, contact Perfect Buy on 071 463
+          2853.
         </p>
       </InformationSection>
     </InformationPage>

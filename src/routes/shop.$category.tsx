@@ -2,7 +2,13 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreFooter } from "@/components/StoreFooter";
 import { StoreHeader } from "@/components/StoreHeader";
-import { desktopCategories, getCategory, productsFor, type CategorySlug } from "@/lib/catalog";
+import {
+  desktopCategories,
+  fashionCollections,
+  getCategory,
+  productsFor,
+  type CategorySlug,
+} from "@/lib/catalog";
 import { absoluteUrl } from "@/lib/site";
 
 const categoryHeroes: Partial<Record<CategorySlug, { src: string; alt: string; label: string }>> = {
@@ -34,6 +40,22 @@ const categoryHeroes: Partial<Record<CategorySlug, { src: string; alt: string; l
 };
 
 const categoryGuides: Partial<Record<CategorySlug, { title: string; paragraphs: string[] }>> = {
+  footwear: {
+    title: "Find a sneaker style that fits your wardrobe",
+    paragraphs: [
+      "Explore women's sneakers with pink, white, butterfly and crystal-detail designs. The collection includes Air Max and Air Force styles; open each listing to see the photos and finish of that particular pair.",
+      "Compare the available sizes on the product page with a pair you already wear comfortably. Size options can differ between styles, so check the exact listing before adding your pair to the cart. Ask Perfect Buy for help if you are unsure about fit or product details.",
+      "Choose a simple colour for everyday outfits or a decorated pair for a statement look. Prices are shown in South African rand. Contact us to confirm availability, delivery arrangements and the total cost before ordering.",
+    ],
+  },
+  "womens-clothing": {
+    title: "Compare White Timeless pajama sets",
+    paragraphs: [
+      "Browse White Timeless striped and cheeta-print pajama sets, with product photos showing the matching pieces and each design's details. Each listing gives the current set price and the sizes available to choose from.",
+      "When shopping for women's pajamas online in South Africa, start with the size options for your chosen set. Compare the shape with sleepwear you already find comfortable, and ask for product-specific sizing information if you need it. We do not assume that one size fits the same across every style.",
+      "A matching pajama set can be a relaxed addition to your own wardrobe or a thoughtful gift. Check the product description, confirm delivery arrangements and contact Perfect Buy with any questions before placing an order.",
+    ],
+  },
   "new-arrivals": {
     title: "Discover the latest Perfect Buy finds",
     paragraphs: [
@@ -91,12 +113,15 @@ export const Route = createFileRoute("/shop/$category")({
       };
     }
     const { category } = loaderData;
-    const description = `${category.blurb} Shop ${category.name.toLowerCase()} at Perfect Buy, South Africa.`;
+    const description =
+      category.blurb.length > 125
+        ? category.blurb
+        : `${category.blurb} Available at Perfect Buy, South Africa.`;
     const canonicalUrl = absoluteUrl(`/shop/${category.slug}`);
     const hero = categoryHeroes[category.slug as CategorySlug];
     return {
       meta: [
-        { title: `${category.name} | Shop Online at Perfect Buy South Africa` },
+        { title: `${category.name} South Africa | Perfect Buy` },
         { name: "description", content: description },
         { property: "og:title", content: `${category.name} | Perfect Buy South Africa` },
         { property: "og:description", content: description },
@@ -249,7 +274,7 @@ function CategoryPage() {
         <div className="mt-14 border-t border-border pt-10">
           <h2 className="text-xl">Keep browsing</h2>
           <ul className="mt-4 flex flex-wrap gap-3">
-            {desktopCategories
+            {[...fashionCollections, ...desktopCategories]
               .filter((c) => c.slug !== category.slug)
               .map((c) => (
                 <li key={c.slug}>

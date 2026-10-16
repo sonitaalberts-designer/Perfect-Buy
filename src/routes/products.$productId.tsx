@@ -40,7 +40,7 @@ export const Route = createFileRoute("/products/$productId")({
 
     return {
       meta: [
-        { title: `${product.name} | Buy Online at Perfect Buy` },
+        { title: `${product.name} | Perfect Buy` },
         { name: "description", content: description },
         { property: "og:title", content: `${product.name} | Perfect Buy` },
         { property: "og:description", content: description },
@@ -98,7 +98,12 @@ function ProductPage() {
                 price: product.price.toFixed(2),
                 availability: "https://schema.org/InStock",
                 itemCondition: "https://schema.org/NewCondition",
-                seller: { "@type": "Organization", name: "Perfect Buy" },
+                seller: {
+                  "@type": "Organization",
+                  "@id": absoluteUrl("/#organization"),
+                  name: "Perfect Buy",
+                  url: absoluteUrl("/"),
+                },
               },
             }
           : {}),
