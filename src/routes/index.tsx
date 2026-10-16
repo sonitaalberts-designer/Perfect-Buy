@@ -29,7 +29,10 @@ export const Route = createFileRoute("/")({
       { property: "og:image", content: absoluteUrl("/new-arrivals-hero.webp") },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: SITE_URL }],
+    links: [
+      { rel: "canonical", href: SITE_URL },
+      { rel: "preload", as: "image", href: heroPink, fetchPriority: "high" },
+    ],
   }),
   component: Home,
 });
@@ -65,9 +68,21 @@ function Home() {
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
+    const connection = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      connection?.saveData ||
+      ["slow-2g", "2g"].includes(connection?.effectiveType ?? "")
+    )
+      return;
+
     let videoTimer: number | undefined;
     const enableVideo = () => {
-      videoTimer = window.setTimeout(() => setLoadHeroVideo(true), 250);
+      videoTimer = window.setTimeout(() => setLoadHeroVideo(true), 1500);
     };
 
     if (document.readyState === "complete") enableVideo();
@@ -117,7 +132,7 @@ function Home() {
         {/* Hero */}
         <section className="relative overflow-hidden bg-primary lg:min-h-[100svh]">
           <video
-            src={loadHeroVideo ? "/hero-video.mp4" : undefined}
+            src={loadHeroVideo ? "/hero-video-light.mp4" : undefined}
             autoPlay
             muted
             loop

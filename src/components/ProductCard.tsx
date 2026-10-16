@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { getCategory, type Product } from "@/lib/catalog";
+import { responsiveImage } from "@/lib/responsive-image";
 
 export function ProductCard({
   product,
@@ -22,8 +23,13 @@ export function ProductCard({
             aria-label={`View ${product.name}`}
           >
             <img
-              src={product.images[0]}
+              {...responsiveImage(
+                product.images[0]!,
+                "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw",
+              )}
               alt={product.name}
+              width={640}
+              height={640}
               loading="lazy"
               decoding="async"
               className="aspect-square w-full object-contain transition-transform duration-300 group-hover:scale-[1.02]"

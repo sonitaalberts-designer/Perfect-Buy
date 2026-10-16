@@ -136,17 +136,19 @@ function CheckoutPage() {
     setError("");
     setLoading(true);
     try {
-      const result = await createYocoCheckout({
-        data: {
-          customer,
-          items: items.map(({ productId, quantity, size, color }) => ({
-            productId,
-            quantity,
-            size,
-            color,
-          })),
-        },
+      const data = checkoutInput.parse({
+        customer,
+        items: items.map(({ productId, quantity, size, color }) => ({
+          productId,
+          quantity,
+          size,
+          color,
+        })),
       });
+      const result =
+        import.meta.env["VITE_HOSTING_TARGET"] === "cpanel"
+          ? await createCpanelCheckout(data)
+          : await createYocoCheckout({ data });
       window.location.assign(result.redirectUrl);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "We couldn't start secure payment.");
@@ -324,4 +326,17 @@ function CheckoutPage() {
       </main>
     </div>
   );
+}
+
+async function createCpanelCheckout(data: z.infer<typeof checkoutInput>) {
+  const response = await fetch("/api/checkout.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || typeof result.redirectUrl !== "string") {
+    throw new Error(result.error || "We couldn't start secure payment. Please try again.");
+  }
+  return result as { redirectUrl: string };
 }

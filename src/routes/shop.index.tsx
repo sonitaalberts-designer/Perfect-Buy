@@ -4,6 +4,7 @@ import { StoreFooter } from "@/components/StoreFooter";
 import { ProductCard } from "@/components/ProductCard";
 import { desktopCategories, products } from "@/lib/catalog";
 import { absoluteUrl } from "@/lib/site";
+import { responsiveImage } from "@/lib/responsive-image";
 
 export const Route = createFileRoute("/shop/")({
   head: () => ({
@@ -70,7 +71,7 @@ function ShopIndex() {
                 className="tile group w-[72vw] max-w-72 shrink-0 bg-white sm:w-64 lg:w-72"
               >
                 <img
-                  src={cat.img}
+                  {...responsiveImage(cat.img, "(min-width: 640px) 288px, 72vw")}
                   alt={index < desktopCategories.length ? cat.name : ""}
                   loading="lazy"
                   decoding="async"

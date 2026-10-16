@@ -41,3 +41,39 @@ VERCEL=1 npx pnpm@11.25.0 run build
 - `scripts/generate-seo-files.mjs`: regenerates `robots.txt` and `sitemap.xml` before production builds.
 
 The project originated in Lovable. Keep any connected Git history intact when syncing changes.
+# Domains.co.za cPanel deployment
+
+Run `pnpm run build:cpanel` with Node.js 24 to create `deploy-cpanel/`. This renders
+all product, category, blog and information pages at build time, copies the public
+assets, and includes a PHP checkout endpoint. A Node.js process is not required on
+the hosting account. The existing Vercel build remains available separately.
+
+Upload the **contents** of `deploy-cpanel/` (including `.htaccess`) into the domain's
+own document root, `/home/houseofcreat/public_html/perfectbuy.co.za`. Do not upload
+the repository, `.env` files, dependencies, or Vercel function output.
+
+For Yoco payments, copy `hosting/cpanel/perfectbuy-config.example.php` to
+`/home/houseofcreat/.perfectbuy-config.php`, outside every public website folder.
+Set its secret key directly on the server. The endpoint validates customer input,
+product options and quantities, and calculates totals from its generated server
+catalog. Without a configured key it returns a clear 503 message and never
+starts a payment. PHP 8+ with cURL and outbound HTTPS is required.
+
+Rebuild and upload after editing products or pages. Point the domain's website
+records to the hosting account's shared IP and issue an SSL certificate before
+enabling HTTPS redirects or accepting customer information. Preserve existing
+email records when updating DNS. As with the Vercel checkout, payment redirects
+are not fulfillment confirmation: verify payment in Yoco before fulfilling an order.
+
+## Image performance
+
+Product cards and galleries use checked-in WebP variants at 320, 640 and 1280 pixels.
+Browsers select a suitable size; newly added images fall back to their original URL.
+To regenerate variants after replacing catalog photos, run `node scripts/optimize-images.mjs`
+from the repository root with Sharp installed, or set `SHARP_MODULE` to an installed
+Sharp module. Commit the generated `public/image-sizes` files and
+`src/lib/image-variants.json` together. Normal builds do not require Sharp.
+
+The homepage uses `hero-video-light.mp4` (720p H.264, 24 fps, no audio, fast-start),
+starting after the initial page loads. Data saving, 2G and reduced-motion preferences
+keep the still poster. The original video is retained for future editing.

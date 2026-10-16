@@ -13,6 +13,7 @@ import {
 } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { absoluteUrl } from "@/lib/site";
+import { responsiveImage } from "@/lib/responsive-image";
 
 export const Route = createFileRoute("/products/$productId")({
   loader: ({ params }) => {
@@ -156,7 +157,10 @@ function ProductPage() {
             <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-soft">
               {product.images[imageIndex] ? (
                 <img
-                  src={product.images[imageIndex]}
+                  {...responsiveImage(
+                    product.images[imageIndex],
+                    "(min-width: 1024px) 55vw, 100vw",
+                  )}
                   alt={`${product.name}${imageIndex ? ` — image ${imageIndex + 1}` : ""}`}
                   width={1200}
                   height={1200}
@@ -187,7 +191,7 @@ function ProductPage() {
                     }`}
                   >
                     <img
-                      src={image}
+                      {...responsiveImage(image, "(min-width: 640px) 100px, 25vw")}
                       alt=""
                       width={180}
                       height={180}

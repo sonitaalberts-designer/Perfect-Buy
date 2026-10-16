@@ -11,6 +11,7 @@
     "dev": "vite dev",
     "prebuild": "node scripts/generate-seo-files.mjs",
     "build": "vite build",
+    "build:cpanel": "node scripts/build-cpanel.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

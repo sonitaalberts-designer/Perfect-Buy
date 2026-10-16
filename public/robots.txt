@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://pixel-perfect-screenshot-sepia.vercel.app/sitemap.xml
+Sitemap: https://perfectbuy.co.za/sitemap.xml
