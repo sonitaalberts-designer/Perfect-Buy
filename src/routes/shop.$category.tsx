@@ -44,7 +44,7 @@ const categoryGuides: Partial<Record<CategorySlug, { title: string; paragraphs: 
     title: "Find a sneaker style that fits your wardrobe",
     paragraphs: [
       "Explore women's sneakers with pink, white, butterfly and crystal-detail designs. The collection includes Air Max and Air Force styles; open each listing to see the photos and finish of that particular pair.",
-      "Compare the available sizes on the product page with a pair you already wear comfortably. Size options can differ between styles, so check the exact listing before adding your pair to the cart. Ask Perfect Buy for help if you are unsure about fit or product details.",
+      "All sneaker sizes use SA/UK sizing. Compare the size on the product page with the SA/UK label in a pair you already wear comfortably. EU and US numbers use different systems. Size options can differ between styles, so check the exact listing before adding your pair to the cart. Ask Perfect Buy for help if you are unsure about fit or product details.",
       "Choose a simple colour for everyday outfits or a decorated pair for a statement look. Prices are shown in South African rand. Contact us to confirm availability, delivery arrangements and the total cost before ordering.",
     ],
   },

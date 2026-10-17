@@ -1,13 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { InformationPage, InformationSection } from "@/components/InformationPage";
 import { pageHead } from "@/lib/site";
 
 const description =
-  "Use Perfect Buy's size guidance when comparing women's sneakers, footwear and pajama sets online in South Africa.";
+  "Perfect Buy sneaker sizes use SA/UK sizing. Check listed sneaker and pajama sizes, compare fit and ask for product-specific guidance before ordering.";
 
 export const Route = createFileRoute("/size-guide")({
   head: () =>
-    pageHead("Size Guide for Footwear & Pajamas | Perfect Buy", description, "/size-guide"),
+    pageHead("SA/UK Sneaker & Pajama Size Guide | Perfect Buy", description, "/size-guide"),
   component: SizeGuidePage,
 });
 
@@ -18,12 +18,13 @@ function SizeGuidePage() {
       title="Choose your size with a little more confidence."
       intro="Available sizes are shown on each product page. Because fit can vary by style, compare those options with an item you already wear comfortably."
     >
-      <InformationSection title="Footwear">
+      <InformationSection title="Sneakers: SA/UK sizes">
         <p>
-          Use the numbered size shown on the individual sneaker page. Compare it with the size of a
-          similar shoe you already own, and consider the shape of the style as well as the number.
-          If you are between sizes or need a specific measurement, request product-specific guidance
-          before ordering.
+          All Perfect Buy sneaker sizes use SA/UK sizing. EU and US size numbers use different
+          systems, so check the SA/UK label inside a pair you already wear comfortably rather than
+          choosing the same number from another system. Compare a similar shoe style as well as the
+          number. If you are between sizes or need a specific measurement, request product-specific
+          guidance before ordering.
         </p>
       </InformationSection>
 
@@ -32,6 +33,18 @@ function SizeGuidePage() {
           Pajama sizes are shown as XS, S, M, L or XL where available. For the most comfortable fit,
           compare the available option with a relaxed shirt and shorts set you already wear rather
           than relying only on a usual fitted-clothing size.
+        </p>
+      </InformationSection>
+
+      <InformationSection title="Between sizes or unsure?">
+        <p>
+          Tell us the exact product name and the size system on your current shoes. If you need a
+          measurement, ask before ordering; we do not use one conversion chart for every style.
+        </p>
+        <p>
+          <Link to="/contact" className="font-semibold text-primary hover:underline">
+            Ask Perfect Buy for sizing help
+          </Link>
         </p>
       </InformationSection>
 

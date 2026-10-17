@@ -98,12 +98,12 @@ export const blogPosts: BlogPost[] = [
     title: "Nike Sneakers for Women in South Africa: A Style & Fit Guide",
     seoTitle: "Nike Sneakers for Women in South Africa | Perfect Buy",
     seoDescription:
-      "Compare Nike Air Max and Air Force styles, sizing, colours and details when shopping for women's Nike sneakers in South Africa.",
+      "Compare Nike Air Max and Air Force styles, SA/UK sizes, colours and details when shopping for women's Nike sneakers in South Africa.",
     excerpt:
       "From pink statement pairs to crisp white classics, use this guide to compare women's sneaker styles before choosing your pair.",
     date: "October 2026",
     datePublished: "2026-10-13",
-    dateModified: "2026-10-16",
+    dateModified: "2026-10-17",
     readingTime: "5 min read",
     tag: "Sneaker guide",
     image: "/blog/nike-sneakers-women-south-africa.webp",
@@ -130,7 +130,7 @@ export const blogPosts: BlogPost[] = [
       "Nike sneakers for women can be sporty, minimal or completely statement-making. Before choosing a pair, think about where you will wear it most: everyday errands, casual outfits, long days on your feet or occasions when the shoes are meant to be the focus.",
       "Nike Air Max sneakers are known for a chunkier profile and visible cushioning, which works well with leggings, denim and relaxed matching sets. Nike Air Force styles offer a cleaner low-top shape that pairs easily with dresses, shorts and wide-leg trousers. The best silhouette is the one that fits your wardrobe rather than a single trend.",
       "Colour changes the whole mood. White women's Nike sneakers are easy to repeat across outfits, while black and white pairs create a stronger contrast. Pink Nike sneakers, crystal details and butterfly accents are made for shoppers who want their footwear to stand out.",
-      "Sizing deserves a careful look when buying Nike sneakers in South Africa online. Check the available size selector on the product page, compare it with footwear you already own and read every product-specific note before ordering. A familiar brand name does not replace checking the details for that exact style.",
+      "Perfect Buy sneaker sizes use SA/UK sizing. When buying sneakers online in South Africa, compare the available size selector with the SA/UK label in footwear you already own. EU and US size numbers use different systems, so do not assume the same number means the same fit. Check the exact style and read every product-specific note before ordering. A familiar brand name does not replace checking the details for that exact style.",
       "Materials and embellishments also affect care. Wipe smooth sections with a soft damp cloth, use a gentle brush on mesh and avoid soaking crystal or decorative details. Let sneakers dry naturally away from direct heat so the shape and finish last longer.",
       "Start with fit and function, then choose the colour and finish that feels most like you. Browse Perfect Buy's women's sneaker collection to compare the current styles, photos, prices and listed sizes. Contact us with any questions about the exact pair before ordering.",
     ],

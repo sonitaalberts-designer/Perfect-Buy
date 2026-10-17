@@ -14,6 +14,8 @@ import {
 import { useCart } from "@/lib/cart";
 import { absoluteUrl } from "@/lib/site";
 import { responsiveImage } from "@/lib/responsive-image";
+import { fashionDetails, fashionSearchDescription } from "@/lib/fashion";
+import { supportWhatsApp } from "@/lib/site";
 
 export const Route = createFileRoute("/products/$productId")({
   loader: ({ params }) => {
@@ -34,15 +36,16 @@ export const Route = createFileRoute("/products/$productId")({
     }
 
     const { product } = loaderData;
-    const description = productDescription(product);
+    const description = fashionSearchDescription(product) ?? productDescription(product);
+    const title = `${fashionDetails[product.id]?.title ?? product.name} | Perfect Buy`;
     const canonicalUrl = absoluteUrl(`/products/${product.id}`);
     const imageUrl = product.images[0] ? absoluteUrl(product.images[0]) : undefined;
 
     return {
       meta: [
-        { title: `${product.name} | Perfect Buy` },
+        { title },
         { name: "description", content: description },
-        { property: "og:title", content: `${product.name} | Perfect Buy` },
+        { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "product" },
         { property: "og:url", content: canonicalUrl },
@@ -69,6 +72,8 @@ function ProductPage() {
   const [added, setAdded] = useState(false);
   const { addItem } = useCart();
   const description = productDescription(product);
+  const details = fashionDetails[product.id];
+  const isSneaker = product.category === "footwear";
   const formattedPrice =
     product.price === undefined ? null : new Intl.NumberFormat("en-ZA").format(product.price);
   const relatedProducts = productsFor(categorySlug)
@@ -88,7 +93,9 @@ function ProductPage() {
         sku: product.id,
         category: category?.name,
         ...(product.colors ? { color: product.colors.join(", ") } : {}),
-        ...(product.sizes ? { size: product.sizes } : {}),
+        ...(product.sizes
+          ? { size: product.sizes.map((size) => (isSneaker ? `SA/UK ${size}` : size)) }
+          : {}),
         ...(product.price !== undefined
           ? {
               offers: {
@@ -225,7 +232,7 @@ function ProductPage() {
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {product.sizes && (
                   <label className="block text-sm font-semibold">
-                    Size
+                    {isSneaker ? "Size (SA/UK)" : "Size"}
                     <select
                       value={selectedSize}
                       onChange={(event) => setSelectedSize(event.target.value)}
@@ -256,6 +263,13 @@ function ProductPage() {
                   </label>
                 )}
               </div>
+            )}
+
+            {isSneaker && (
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                All sneaker sizes use SA/UK sizing. Compare with your current pair's SA/UK label; EU
+                and US numbers use different systems. Ask us if you need help choosing.
+              </p>
             )}
 
             {product.price !== undefined && (
@@ -317,6 +331,65 @@ function ProductPage() {
             )}
           </section>
         </div>
+
+        {details && (
+          <section
+            className="mt-16 grid gap-8 rounded-2xl border border-border bg-blush/40 p-6 md:grid-cols-2 md:p-10"
+            aria-labelledby="fashion-details"
+          >
+            <div>
+              <h2 id="fashion-details" className="text-2xl tracking-tight">
+                A closer look at this {isSneaker ? "pair" : "set"}
+              </h2>
+              <ul className="mt-5 list-disc space-y-2 pl-5 text-foreground/80">
+                {details.highlights.map((highlight) => (
+                  <li key={highlight}>{highlight}</li>
+                ))}
+              </ul>
+              <p className="mt-5 text-sm leading-6 text-foreground/75">
+                Listed sizes{isSneaker ? " (SA/UK)" : ""}: {product.sizes?.join(", ")}. Check the
+                selector for your chosen option.
+                {isSneaker
+                  ? " Fit can vary between styles; a size number alone does not confirm the fit."
+                  : " Size letters do not replace garment measurements; ask us for fit and fabric details before ordering."}
+              </p>
+            </div>
+            <div>
+              <h2 className="text-2xl tracking-tight">Before you order</h2>
+              <p className="mt-5 leading-7 text-foreground/75">
+                Confirm the exact style, size, availability and delivery cost for your South African
+                address with Perfect Buy. Keep the product name handy when asking about this
+                listing.
+              </p>
+              <a
+                href={`${supportWhatsApp}?text=${encodeURIComponent(`Hi Perfect Buy, I'd like help with ${product.name}. Please confirm sizing, availability and delivery.`)}`}
+                className="mt-4 inline-block font-semibold text-primary hover:underline"
+              >
+                Ask about this {isSneaker ? "pair" : "set"} on WhatsApp
+              </a>
+              <div className="mt-5 flex flex-wrap gap-5 text-sm font-semibold text-primary">
+                <Link
+                  to="/blog/$slug"
+                  params={{
+                    slug: isSneaker
+                      ? "nike-sneakers-for-women-south-africa"
+                      : "womens-pajama-sets-south-africa",
+                  }}
+                  className="hover:underline"
+                >
+                  Read the {isSneaker ? "sneaker style & fit" : "pajama comparison"} guide
+                </Link>
+                <Link
+                  to="/shop/$category"
+                  params={{ category: categorySlug }}
+                  className="hover:underline"
+                >
+                  Compare all {isSneaker ? "sneakers" : "pajama sets"}
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
 
         {relatedProducts.length > 0 && (
           <section

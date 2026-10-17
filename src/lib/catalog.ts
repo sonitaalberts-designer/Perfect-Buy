@@ -688,7 +688,7 @@ export const fashionCollections: Category[] = [
     name: "Women's Sneakers",
     note: "Statement styles & everyday pairs",
     blurb:
-      "Shop women's sneakers in South Africa, from pink and crystal-detail pairs to butterfly designs. Compare photos, prices and listed sizes before you order.",
+      "Shop women's sneakers in South Africa, from pink and crystal-detail pairs to butterfly designs. Compare photos, prices and SA/UK sizes before you order.",
     img: photo("swarovski-blinged-nike-air-max-27c-full-pink"),
   },
   {
