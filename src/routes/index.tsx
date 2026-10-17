@@ -4,7 +4,6 @@ import { ArrowRight, Sparkles, SlidersHorizontal, ShieldCheck } from "lucide-rea
 import { useEffect, useState } from "react";
 import { StoreHeader } from "@/components/StoreHeader";
 import { categories as shopCategories, fashionCollections, products } from "@/lib/catalog";
-import heroPink from "@/assets/hero-pink.jpg";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreFooter } from "@/components/StoreFooter";
 import { absoluteUrl, SITE_URL, supportPhoneInternational, supportWhatsApp } from "@/lib/site";
@@ -29,10 +28,7 @@ export const Route = createFileRoute("/")({
       { property: "og:image", content: absoluteUrl("/new-arrivals-hero.webp") },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [
-      { rel: "canonical", href: SITE_URL },
-      { rel: "preload", as: "image", href: heroPink, fetchPriority: "high" },
-    ],
+    links: [{ rel: "canonical", href: SITE_URL }],
   }),
   component: Home,
 });
@@ -80,17 +76,13 @@ function Home() {
     )
       return;
 
-    let videoTimer: number | undefined;
-    const enableVideo = () => {
-      videoTimer = window.setTimeout(() => setLoadHeroVideo(true), 1500);
-    };
+    const enableVideo = () => setLoadHeroVideo(true);
 
     if (document.readyState === "complete") enableVideo();
     else window.addEventListener("load", enableVideo, { once: true });
 
     return () => {
       window.removeEventListener("load", enableVideo);
-      if (videoTimer) window.clearTimeout(videoTimer);
     };
   }, []);
   return (
@@ -140,7 +132,7 @@ function Home() {
 
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden bg-primary lg:min-h-[100svh]">
+        <section className="relative overflow-hidden bg-secondary lg:min-h-[100svh]">
           <video
             src={loadHeroVideo ? "/hero-video-light.mp4" : undefined}
             autoPlay
@@ -148,7 +140,6 @@ function Home() {
             loop
             playsInline
             preload="none"
-            poster={heroPink}
             aria-hidden="true"
             tabIndex={-1}
             className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
