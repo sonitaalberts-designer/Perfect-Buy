@@ -64,8 +64,8 @@ server-calculated Yoco amount, regardless of the products or quantities. Both
 checkout runtimes enforce the same fixed fee; browser-supplied totals are ignored.
 
 The owner requested detailed paid-order notifications to `orders@perfect-buy.co.za`
-(Titan Mail). These notifications are not connected yet: they require verified
-Yoco payment webhooks and a configured mail sender. cPanel now saves customer,
+(Titan Mail). These notifications are not connected yet: the verified Yoco payment trigger is
+ready, but a configured mail sender and notification delivery worker are still required. cPanel now saves customer,
 product, option, amount and verified locker details in private 0600 JSON files under
 `/home/houseofcreat/.perfectbuy-orders`, with status `awaiting_payment`. A browser
 success redirect never marks these records paid or books a shipment.
@@ -132,8 +132,10 @@ a private checkout-id index before returning its payment URL.
 
 Only a verified matching `payment.succeeded` marks an order paid. This handler
 currently leaves courier booking and email delivery in `pending_configuration`;
-it does not send notifications or create a shipment. Registration, private secret
-configuration and an end-to-end sandbox test are still required. Fixed parcel
+it does not send notifications or create a shipment. The production domain is verified, test/live subscriptions are registered, private
+configuration is installed, and an actual Yoco sandbox callback has marked its
+isolated test order paid. Live checkout is enabled; no real payment was made
+during verification. Fixed parcel
 measurements must be provided by the merchant; Large's capacity is not a guessed
 actual weight. Do not enable an automatic booking worker without those settings.
 
