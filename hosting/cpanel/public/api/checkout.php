@@ -48,6 +48,21 @@ foreach (['name' => [2, 100], 'email' => [3, 200], 'phone' => [7, 30]] as $field
 if (!filter_var($customer['email'], FILTER_VALIDATE_EMAIL)) {
     failCheckout(400, 'Please enter a valid email address.');
 }
+$lockerId = $data['lockerId'] ?? null;
+if (!is_string($lockerId) || strlen($lockerId) > 100 || $lockerId === '') {
+    failCheckout(400, 'Please choose your PUDO collection locker.');
+}
+require_once __DIR__ . '/courier.php';
+try {
+    $lockers = array_column(perfectBuyCollectionLockers(), null, 'id');
+} catch (RuntimeException $error) {
+    failCheckout(503, $error->getMessage());
+}
+$locker = $lockers[$lockerId] ?? null;
+if (!$locker) failCheckout(400, 'Please choose an available PUDO collection locker.');
+$courierConfig = perfectBuyCourierConfig();
+$senderLocker = $lockers[$courierConfig['sender_locker_id'] ?? ''] ?? null;
+if (!$senderLocker) failCheckout(503, 'Shipping is still being configured. Please try again soon.');
 $catalog = json_decode(file_get_contents(__DIR__ . '/catalog.json'), true);
 if (!is_array($catalog)) failCheckout(503, 'Secure checkout is temporarily unavailable.');
 $catalogById = array_column($catalog, null, 'id');
@@ -55,6 +70,7 @@ $catalogById = array_column($catalog, null, 'id');
 $shippingFeeCents = 10000;
 $amount = $shippingFeeCents;
 $summary = [];
+$orderItems = [];
 foreach ($items as $item) {
     if (!is_array($item) || !isset($item['productId']) || !is_string($item['productId']) ||
         !isset($item['quantity']) || !is_int($item['quantity']) || $item['quantity'] < 1 || $item['quantity'] > 10) {
@@ -73,6 +89,11 @@ foreach ($items as $item) {
     // Amounts always come from the server catalog, never from browser prices.
     $amount += (int)round($product['price'] * 100) * $item['quantity'];
     $summary[] = $item['quantity'] . 'x ' . $product['name'];
+    $orderItems[] = [
+        'productId' => $item['productId'], 'name' => $product['name'],
+        'quantity' => $item['quantity'], 'unitPriceCents' => (int)round($product['price'] * 100),
+        'size' => $item['size'] ?? null, 'color' => $item['color'] ?? null,
+    ];
 }
 
 $secret = $config['yoco_secret_key'] ?? getenv('YOCO_SECRET_KEY');
@@ -80,6 +101,21 @@ if (!$secret || !function_exists('curl_init')) {
     failCheckout(503, 'Secure checkout is still being configured. Please try again soon.');
 }
 $reference = 'PB-' . strtoupper(bin2hex(random_bytes(8)));
+$orderDirectory = $home . '/.perfectbuy-orders';
+$oldMask = umask(0077);
+if (!is_dir($orderDirectory)) @mkdir($orderDirectory, 0700, true);
+$orderPath = $orderDirectory . '/' . $reference . '.json';
+$orderRecord = [
+    'reference' => $reference, 'createdAt' => gmdate('c'), 'status' => 'awaiting_payment',
+    'customer' => $customer, 'items' => $orderItems, 'amountCents' => $amount,
+    'shippingFeeCents' => $shippingFeeCents, 'shippingMethod' => 'PUDO locker to locker',
+    'senderLocker' => $senderLocker, 'collectionLocker' => $locker,
+    // Large is a capacity requirement; fulfillment must supply actual packed measurements.
+    'requestedParcelClass' => 'V4-L', 'fulfillmentStatus' => 'not_booked',
+];
+$saved = @file_put_contents($orderPath, json_encode($orderRecord), LOCK_EX);
+umask($oldMask);
+if ($saved === false) failCheckout(503, 'We could not save your order. Please try again later.');
 $payload = [
     'amount' => $amount,
     'currency' => 'ZAR',
@@ -93,6 +129,10 @@ $payload = [
         'customerPhone' => $customer['phone'],
         'items' => substr(implode(', ', $summary), 0, 500),
         'shippingFee' => number_format($shippingFeeCents / 100, 2, '.', ''),
+        'shippingMethod' => 'PUDO locker to locker',
+        'collectionLockerId' => $locker['id'],
+        'collectionLockerName' => $locker['name'],
+        'collectionLockerAddress' => $locker['address'],
     ],
 ];
 $curl = curl_init('https://payments.yoco.com/api/checkouts');
@@ -112,5 +152,9 @@ $redirect = is_array($result) ? ($result['redirectUrl'] ?? null) : null;
 if ($status < 200 || $status >= 300 || !is_string($redirect) ||
     !filter_var($redirect, FILTER_VALIDATE_URL) || parse_url($redirect, PHP_URL_SCHEME) !== 'https') {
     failCheckout(502, "We couldn't start secure payment. Please try again.");
+}
+$orderRecord['checkoutId'] = $result['id'] ?? null;
+if (@file_put_contents($orderPath, json_encode($orderRecord), LOCK_EX) === false) {
+    failCheckout(503, 'We could not save your payment reference. Please try again later.');
 }
 echo json_encode(['redirectUrl' => $redirect, 'checkoutId' => $result['id'] ?? null, 'orderReference' => $reference]);

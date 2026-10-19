@@ -9,8 +9,10 @@ import { StoreHeader } from "@/components/StoreHeader";
 import { products } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { SHIPPING_FEE, SHIPPING_FEE_CENTS } from "@/lib/shipping";
+import type { CollectionLocker } from "@/lib/lockers";
 
 const checkoutInput = z.object({
+  lockerId: z.string().min(1, "Please choose your collection locker.").max(100),
   customer: z.object({
     name: z.string().trim().min(2).max(100),
     email: z.string().trim().email().max(200),
@@ -29,6 +31,17 @@ const checkoutInput = z.object({
     .max(50),
 });
 
+const searchLockers = createServerFn({ method: "GET" })
+  .validator(z.string().trim().min(2).max(80))
+  .handler(async ({ data }) => {
+    const { getCollectionLockers } = await import("@/lib/courier.server");
+    return (await getCollectionLockers())
+      .filter((locker) =>
+        `${locker.name} ${locker.address}`.toLowerCase().includes(data.toLowerCase()),
+      )
+      .slice(0, 40);
+  });
+
 type YocoCheckoutResponse = {
   id?: string;
   redirectUrl?: string;
@@ -41,6 +54,10 @@ const createYocoCheckout = createServerFn({ method: "POST" })
     const secretKey = process.env["YOCO_SECRET_KEY"];
     if (!secretKey)
       throw new Error("Secure checkout is still being configured. Please try again soon.");
+
+    const { getCollectionLockers } = await import("@/lib/courier.server");
+    const locker = (await getCollectionLockers()).find((point) => point.id === data.lockerId);
+    if (!locker) throw new Error("Please choose an available collection locker.");
 
     const verifiedItems = data.items.map((line) => {
       const product = products.find((entry) => entry.id === line.productId);
@@ -87,6 +104,10 @@ const createYocoCheckout = createServerFn({ method: "POST" })
           customerPhone: data.customer.phone,
           items: itemSummary,
           shippingFee: SHIPPING_FEE.toFixed(2),
+          shippingMethod: "PUDO locker to locker",
+          collectionLockerId: locker.id,
+          collectionLockerName: locker.name,
+          collectionLockerAddress: locker.address,
         },
       }),
     });
@@ -130,6 +151,50 @@ function CheckoutPage() {
   const [customer, setCustomer] = useState({ name: "", email: "", phone: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [lockerQuery, setLockerQuery] = useState("");
+  const [lockers, setLockers] = useState<CollectionLocker[]>([]);
+  const [locker, setLocker] = useState<CollectionLocker | null>(null);
+  const [lockerError, setLockerError] = useState("");
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const query = lockerQuery.trim();
+    if (query.length < 2) {
+      setLockers([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    setLockerError("");
+    const timer = window.setTimeout(async () => {
+      try {
+        let results: CollectionLocker[];
+        if (import.meta.env["VITE_HOSTING_TARGET"] === "cpanel") {
+          const response = await fetch(`/api/lockers.php?q=${encodeURIComponent(query)}`);
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "We couldn't load collection lockers.");
+          results = result.lockers;
+        } else {
+          results = await searchLockers({ data: query });
+        }
+        if (active) setLockers(results);
+      } catch (cause) {
+        if (active) {
+          setLockers([]);
+          setLockerError(
+            cause instanceof Error ? cause.message : "Please try your locker search again.",
+          );
+        }
+      } finally {
+        if (active) setSearching(false);
+      }
+    }, 350);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [lockerQuery]);
 
   useEffect(() => {
     if (payment === "success") clearCart();
@@ -141,6 +206,7 @@ function CheckoutPage() {
     try {
       const data = checkoutInput.parse({
         customer,
+        lockerId: locker?.id || "",
         items: items.map(({ productId, quantity, size, color }) => ({
           productId,
           quantity,
@@ -296,6 +362,62 @@ function CheckoutPage() {
                   />
                 </label>
               </div>
+              <fieldset className="mt-6 border-t border-border pt-5">
+                <legend className="pt-5 text-lg font-semibold">PUDO collection locker</legend>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Choose where you will collect your parcel. Shipping is R100 per order.
+                </p>
+                <label className="mt-4 block text-sm font-medium">
+                  Search by town, suburb or locker name
+                  <input
+                    type="search"
+                    maxLength={80}
+                    value={lockerQuery}
+                    onChange={(event) => {
+                      setLockerQuery(event.target.value);
+                      setLocker(null);
+                      setLockers([]);
+                    }}
+                    className="mt-1 h-11 w-full rounded-md border border-input px-3"
+                    placeholder="e.g. Sandton or Three Rivers"
+                  />
+                </label>
+                <div aria-live="polite" className="mt-2 text-sm text-muted-foreground">
+                  {searching
+                    ? "Finding collection lockers…"
+                    : lockerError ||
+                      (lockerQuery.trim().length >= 2 && !lockers.length
+                        ? "No lockers found. Try a nearby suburb or town."
+                        : "")}
+                </div>
+                {lockers.length > 0 && (
+                  <label className="mt-3 block text-sm font-medium">
+                    Choose your collection locker
+                    <select
+                      required
+                      value={locker?.id || ""}
+                      onChange={(event) =>
+                        setLocker(lockers.find((point) => point.id === event.target.value) || null)
+                      }
+                      className="mt-1 h-11 w-full rounded-md border border-input bg-white px-3"
+                    >
+                      <option value="">Select a locker</option>
+                      {lockers.map((point) => (
+                        <option key={point.id} value={point.id}>
+                          {point.name} — {point.city}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {locker && (
+                  <div className="mt-3 rounded-md bg-blush p-3 text-sm">
+                    <p className="font-semibold">{locker.name}</p>
+                    <p className="mt-1">{locker.address}</p>
+                    <p className="mt-2 text-xs leading-5">{locker.hours}</p>
+                  </div>
+                )}
+              </fieldset>
               <div className="mt-6 border-t border-border pt-5">
                 <dl className="space-y-3">
                   <div className="flex justify-between text-sm">
@@ -312,8 +434,8 @@ function CheckoutPage() {
                   </div>
                 </dl>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Flat-rate shipping is R100 per order within South Africa, regardless of the items
-                  or quantity. Shipping is included in the total paid securely through Yoco.
+                  PUDO locker-to-locker shipping is R100 per order within South Africa, regardless
+                  of the items or quantity. Collect from the locker selected above.
                 </p>
               </div>
               {error && (
@@ -323,7 +445,14 @@ function CheckoutPage() {
               )}
               <button
                 type="button"
-                disabled={loading || !customer.name || !customer.email || !customer.phone}
+                disabled={
+                  loading ||
+                  !customer.name ||
+                  !customer.email ||
+                  !customer.phone ||
+                  !locker ||
+                  searching
+                }
                 onClick={pay}
                 className="btn-base btn-pink mt-5 w-full disabled:cursor-not-allowed disabled:opacity-50"
               >

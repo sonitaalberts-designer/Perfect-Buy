@@ -65,9 +65,23 @@ checkout runtimes enforce the same fixed fee; browser-supplied totals are ignore
 
 The owner requested detailed paid-order notifications to `orders@perfect-buy.co.za`
 (Titan Mail). These notifications are not connected yet: they require verified
-Yoco payment webhooks, durable order storage and a configured mail sender. Courier
-Guy bookings also remain pending account/API access, a collection address and
-parcel measurements. Do not describe either integration as active until tested.
+Yoco payment webhooks and a configured mail sender. cPanel now saves customer,
+product, option, amount and verified locker details in private 0600 JSON files under
+`/home/houseofcreat/.perfectbuy-orders`, with status `awaiting_payment`. A browser
+success redirect never marks these records paid or books a shipment.
+
+PUDO locker search uses the documented Courier Guy pickup-points API. It filters
+for visible, online TCG lockers supporting a Large compartment, validates the
+selection again on the server, and includes the destination in Yoco metadata.
+Copy `hosting/cpanel/perfectbuy-courier.example.php` to the private home directory
+as `.perfectbuy-courier.php` (0600), then set the API key there. River Square Mall
+(`7:RVM00186`) is the confirmed sender locker. The API/cache never exposes the key.
+On Vercel, set `COURIER_GUY_API_KEY` as a server-only environment variable; paid
+order storage and mail/webhook configuration there require a durable database.
+
+Automatic Courier Guy bookings remain disabled. Large is a compartment capacity,
+not an actual parcel weight: fulfillment needs accurate packed measurements and
+verified payment before booking. Do not describe bookings or email alerts as active.
 
 Rebuild and upload after editing products or pages. Point the domain's website
 records to the hosting account's shared IP and issue an SSL certificate before
