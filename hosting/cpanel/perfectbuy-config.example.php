@@ -3,6 +3,7 @@
 // Enter the secret directly on the hosting account. Never commit a live key.
 return [
     'yoco_secret_key' => '',
+    'payments_enabled' => false, // Enable only after domain verification and sandbox testing.
     'yoco_webhook_secret' => '', // whsec_ value returned once when registering the webhook.
     'yoco_mode' => 'live', // Use 'test' with test keys and a test webhook.
     'site_url' => 'https://perfectbuy.co.za',

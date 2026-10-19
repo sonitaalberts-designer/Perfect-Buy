@@ -97,7 +97,7 @@ foreach ($items as $item) {
 }
 
 $secret = $config['yoco_secret_key'] ?? getenv('YOCO_SECRET_KEY');
-if (!$secret || !function_exists('curl_init')) {
+if (($config['payments_enabled'] ?? false) !== true || !$secret || !function_exists('curl_init')) {
     failCheckout(503, 'Secure checkout is still being configured. Please try again soon.');
 }
 $reference = 'PB-' . strtoupper(bin2hex(random_bytes(8)));

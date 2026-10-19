@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 if ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 65536) webhookReply(413, 'Request too large.');
 $home = getenv('HOME') ?: '/home/houseofcreat';
-$configPath = $home . '/.perfectbuy-config.php';
+$configPath = $home . (defined('PERFECTBUY_YOCO_TEST') ? '/.perfectbuy-yoco-test-config.php' : '/.perfectbuy-config.php');
 $config = is_file($configPath) ? require $configPath : [];
 $secret = $config['yoco_webhook_secret'] ?? '';
 $mode = $config['yoco_mode'] ?? 'live';
@@ -49,7 +49,7 @@ if (($payment['status'] ?? '') !== 'succeeded' || ($payment['mode'] ?? '') !== $
 }
 $checkoutId = $payment['metadata']['checkoutId'] ?? null;
 if (!is_string($checkoutId) || $checkoutId === '' || strlen($checkoutId) > 200) webhookReply(400, 'Missing checkout reference.');
-$directory = $home . '/.perfectbuy-orders';
+$directory = $home . (defined('PERFECTBUY_YOCO_TEST') ? '/.perfectbuy-test-orders' : '/.perfectbuy-orders');
 $index = $directory . '/checkout-' . hash('sha256', $checkoutId) . '.ref';
 if (!is_file($index)) webhookReply(200, 'Unrelated checkout ignored.');
 $reference = trim(file_get_contents($index));

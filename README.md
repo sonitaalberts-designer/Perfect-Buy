@@ -139,3 +139,9 @@ actual weight. Do not enable an automatic booking worker without those settings.
 
 References: https://developer.yoco.com/guides/online-payments/webhooks/verifying-the-events
 and https://developer.yoco.com/guides/online-payments/webhooks/listen-for-events.
+
+The live cPanel checkout additionally requires `payments_enabled => true` in its
+private configuration. Keep this false until domain verification and sandbox
+checks pass. A separate `yoco-webhook-test.php` uses
+`.perfectbuy-yoco-test-config.php` and `.perfectbuy-test-orders`; it cannot update
+live order files. Register test and live subscriptions with their respective keys.
