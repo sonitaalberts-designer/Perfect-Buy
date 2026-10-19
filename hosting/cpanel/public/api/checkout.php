@@ -157,4 +157,12 @@ $orderRecord['checkoutId'] = $result['id'] ?? null;
 if (@file_put_contents($orderPath, json_encode($orderRecord), LOCK_EX) === false) {
     failCheckout(503, 'We could not save your payment reference. Please try again later.');
 }
+$checkoutId = $result['id'] ?? null;
+if (!is_string($checkoutId) || $checkoutId === '' || strlen($checkoutId) > 200) {
+    failCheckout(502, 'We could not save your payment reference. Please try again.');
+}
+$oldMask = umask(0077);
+$indexSaved = @file_put_contents($orderDirectory . '/checkout-' . hash('sha256', $checkoutId) . '.ref', $reference, LOCK_EX);
+umask($oldMask);
+if ($indexSaved === false) failCheckout(503, 'We could not save your payment reference. Please try again later.');
 echo json_encode(['redirectUrl' => $redirect, 'checkoutId' => $result['id'] ?? null, 'orderReference' => $reference]);

@@ -118,3 +118,24 @@ ownership-verification file for the House of Creatives Search Console account.
 Public customer contact details are maintained in `src/lib/site.ts`.
 Do not add invented reviews, ratings, shipping guarantees, brand identifiers or return
 policies to structured data. Confirm real commercial details before adding them.
+
+## Yoco payment confirmation (cPanel)
+
+`hosting/cpanel/public/api/yoco-webhook.php` implements the Checkout API signed
+webhook. Set `yoco_webhook_secret` and `yoco_mode` in the private configuration,
+register `https://perfectbuy.co.za/api/yoco-webhook.php` using the matching Yoco
+Checkout API key, and test sandbox delivery before enabling live fulfillment.
+The handler checks HMAC-SHA256 against the raw body, a 180-second timestamp
+window, checkout identity, amount, currency and mode. A per-order lock and atomic
+save make duplicate payment notifications idempotent. The checkout endpoint saves
+a private checkout-id index before returning its payment URL.
+
+Only a verified matching `payment.succeeded` marks an order paid. This handler
+currently leaves courier booking and email delivery in `pending_configuration`;
+it does not send notifications or create a shipment. Registration, private secret
+configuration and an end-to-end sandbox test are still required. Fixed parcel
+measurements must be provided by the merchant; Large's capacity is not a guessed
+actual weight. Do not enable an automatic booking worker without those settings.
+
+References: https://developer.yoco.com/guides/online-payments/webhooks/verifying-the-events
+and https://developer.yoco.com/guides/online-payments/webhooks/listen-for-events.
