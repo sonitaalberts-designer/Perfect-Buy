@@ -1,6 +1,15 @@
 <?php
 declare(strict_types=1);
 
+function perfectBuyParcelPreset(): array {
+    // Merchant-selected booking preset for every parcel, independent of product or quantity.
+    // These are declared booking values, not measured weights of individual products.
+    return [
+        'class' => 'V4-L', 'name' => 'Large',
+        'lengthCm' => 60, 'widthCm' => 41, 'heightCm' => 41, 'weightKg' => 15,
+    ];
+}
+
 // Secrets and the short-lived locker cache live outside every document root.
 function perfectBuyCourierConfig(): array {
     $home = getenv('HOME') ?: '/home/houseofcreat';

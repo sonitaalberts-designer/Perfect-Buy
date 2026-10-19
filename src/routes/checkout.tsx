@@ -8,7 +8,7 @@ import { z } from "zod";
 import { StoreHeader } from "@/components/StoreHeader";
 import { products } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
-import { SHIPPING_FEE, SHIPPING_FEE_CENTS } from "@/lib/shipping";
+import { PARCEL_PRESET, SHIPPING_FEE, SHIPPING_FEE_CENTS } from "@/lib/shipping";
 import type { CollectionLocker } from "@/lib/lockers";
 
 const checkoutInput = z.object({
@@ -105,6 +105,7 @@ const createYocoCheckout = createServerFn({ method: "POST" })
           items: itemSummary,
           shippingFee: SHIPPING_FEE.toFixed(2),
           shippingMethod: "PUDO locker to locker",
+          parcelPreset: JSON.stringify(PARCEL_PRESET),
           collectionLockerId: locker.id,
           collectionLockerName: locker.name,
           collectionLockerAddress: locker.address,

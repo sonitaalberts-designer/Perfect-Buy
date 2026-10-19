@@ -79,9 +79,9 @@ as `.perfectbuy-courier.php` (0600), then set the API key there. River Square Ma
 On Vercel, set `COURIER_GUY_API_KEY` as a server-only environment variable; paid
 order storage and mail/webhook configuration there require a durable database.
 
-Automatic Courier Guy bookings remain disabled. Large is a compartment capacity,
-not an actual parcel weight: fulfillment needs accurate packed measurements and
-verified payment before booking. Do not describe bookings or email alerts as active.
+Automatic Courier Guy bookings remain disabled. Every product uses the merchant-selected Large booking preset: 60 × 41 × 41 cm
+and 15 kg per parcel. These are declared booking values, not product measurements.
+Checkout saves this preset with each order; verified payment is required before booking. Do not describe bookings or email alerts as active.
 
 Rebuild and upload after editing products or pages. Point the domain's website
 records to the hosting account's shared IP and issue an SSL certificate before
@@ -135,9 +135,9 @@ currently leaves courier booking and email delivery in `pending_configuration`;
 it does not send notifications or create a shipment. The production domain is verified, test/live subscriptions are registered, private
 configuration is installed, and an actual Yoco sandbox callback has marked its
 isolated test order paid. Live checkout is enabled; no real payment was made
-during verification. Fixed parcel
-measurements must be provided by the merchant; Large's capacity is not a guessed
-actual weight. Do not enable an automatic booking worker without those settings.
+during verification. The merchant has selected the same Large preset for every parcel: 60 × 41 × 41 cm
+and 15 kg. Use these declared booking values for all products. Do not label them
+as measured individual product weights.
 
 References: https://developer.yoco.com/guides/online-payments/webhooks/verifying-the-events
 and https://developer.yoco.com/guides/online-payments/webhooks/listen-for-events.

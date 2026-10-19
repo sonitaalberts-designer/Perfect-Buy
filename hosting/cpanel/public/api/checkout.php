@@ -110,8 +110,8 @@ $orderRecord = [
     'customer' => $customer, 'items' => $orderItems, 'amountCents' => $amount,
     'shippingFeeCents' => $shippingFeeCents, 'shippingMethod' => 'PUDO locker to locker',
     'senderLocker' => $senderLocker, 'collectionLocker' => $locker,
-    // Large is a capacity requirement; fulfillment must supply actual packed measurements.
     'requestedParcelClass' => 'V4-L', 'fulfillmentStatus' => 'not_booked',
+    'parcelPreset' => perfectBuyParcelPreset(),
 ];
 $saved = @file_put_contents($orderPath, json_encode($orderRecord), LOCK_EX);
 umask($oldMask);
@@ -130,6 +130,7 @@ $payload = [
         'items' => substr(implode(', ', $summary), 0, 500),
         'shippingFee' => number_format($shippingFeeCents / 100, 2, '.', ''),
         'shippingMethod' => 'PUDO locker to locker',
+        'parcelPreset' => json_encode(perfectBuyParcelPreset()),
         'collectionLockerId' => $locker['id'],
         'collectionLockerName' => $locker['name'],
         'collectionLockerAddress' => $locker['address'],
