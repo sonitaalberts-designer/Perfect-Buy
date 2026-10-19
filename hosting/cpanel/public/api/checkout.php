@@ -51,7 +51,9 @@ if (!filter_var($customer['email'], FILTER_VALIDATE_EMAIL)) {
 $catalog = json_decode(file_get_contents(__DIR__ . '/catalog.json'), true);
 if (!is_array($catalog)) failCheckout(503, 'Secure checkout is temporarily unavailable.');
 $catalogById = array_column($catalog, null, 'id');
-$amount = 0;
+// Charge shipping once per order; never accept a browser-supplied shipping amount.
+$shippingFeeCents = 10000;
+$amount = $shippingFeeCents;
 $summary = [];
 foreach ($items as $item) {
     if (!is_array($item) || !isset($item['productId']) || !is_string($item['productId']) ||
@@ -90,6 +92,7 @@ $payload = [
         'customerEmail' => $customer['email'],
         'customerPhone' => $customer['phone'],
         'items' => substr(implode(', ', $summary), 0, 500),
+        'shippingFee' => number_format($shippingFeeCents / 100, 2, '.', ''),
     ],
 ];
 $curl = curl_init('https://payments.yoco.com/api/checkouts');

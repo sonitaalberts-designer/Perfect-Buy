@@ -59,6 +59,16 @@ product options and quantities, and calculates totals from its generated server
 catalog. Without a configured key it returns a clear 503 message and never
 starts a payment. PHP 8+ with cURL and outbound HTTPS is required.
 
+Checkout shows a separate R100 shipping line and adds it once per order to the
+server-calculated Yoco amount, regardless of the products or quantities. Both
+checkout runtimes enforce the same fixed fee; browser-supplied totals are ignored.
+
+The owner requested detailed paid-order notifications to `orders@perfect-buy.co.za`
+(Titan Mail). These notifications are not connected yet: they require verified
+Yoco payment webhooks, durable order storage and a configured mail sender. Courier
+Guy bookings also remain pending account/API access, a collection address and
+parcel measurements. Do not describe either integration as active until tested.
+
 Rebuild and upload after editing products or pages. Point the domain's website
 records to the hosting account's shared IP and issue an SSL certificate before
 enabling HTTPS redirects or accepting customer information. Preserve existing

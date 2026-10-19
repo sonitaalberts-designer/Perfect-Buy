@@ -3,7 +3,7 @@ import { InformationPage, InformationSection } from "@/components/InformationPag
 import { pageHead } from "@/lib/site";
 
 const description =
-  "Find delivery and returns guidance for Perfect Buy orders in South Africa. Contact us to confirm delivery costs, timing and return instructions.";
+  "Perfect Buy charges R100 flat-rate shipping per order within South Africa. Find delivery guidance and contact us for timing or return instructions.";
 
 export const Route = createFileRoute("/delivery-returns")({
   head: () =>
@@ -16,13 +16,12 @@ function DeliveryReturnsPage() {
     <InformationPage
       eyebrow="Shopping help"
       title="Delivery and returns, explained clearly."
-      intro="Before ordering, contact Perfect Buy on 071 463 2853 to confirm delivery availability, the fee and estimated timing for your address. Keep your order details for delivery or return enquiries."
+      intro="Shipping costs R100 per order within South Africa, regardless of the items or quantity. The shipping fee is shown separately at checkout and included in your total. Keep your order details for delivery or return enquiries."
     >
       <InformationSection title="Delivery arrangements">
         <p>
-          Perfect Buy delivers within South Africa. Where delivery charges or timing depend on the
-          destination and parcel, those arrangements are confirmed with the customer using the order
-          details supplied at checkout.
+          Perfect Buy delivers within South Africa for a flat R100 shipping fee per order. Contact
+          us on 071 463 2853 to confirm delivery availability and estimated timing for your address.
         </p>
         <p>
           Customers should provide an accurate name, email address and mobile number so order and

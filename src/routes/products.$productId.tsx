@@ -357,12 +357,12 @@ function ProductPage() {
             <div>
               <h2 className="text-2xl tracking-tight">Before you order</h2>
               <p className="mt-5 leading-7 text-foreground/75">
-                Confirm the exact style, size, availability and delivery cost for your South African
-                address with Perfect Buy. Keep the product name handy when asking about this
-                listing.
+                Shipping is R100 per order. Confirm the exact style, size, availability and delivery
+                timing for your South African address with Perfect Buy. Keep the product name handy
+                when asking about this listing.
               </p>
               <a
-                href={`${supportWhatsApp}?text=${encodeURIComponent(`Hi Perfect Buy, I'd like help with ${product.name}. Please confirm sizing, availability and delivery.`)}`}
+                href={`${supportWhatsApp}?text=${encodeURIComponent(`Hi Perfect Buy, I'd like help with ${product.name}. Please confirm sizing, availability and delivery timing.`)}`}
                 className="mt-4 inline-block font-semibold text-primary hover:underline"
               >
                 Ask about this {isSneaker ? "pair" : "set"} on WhatsApp

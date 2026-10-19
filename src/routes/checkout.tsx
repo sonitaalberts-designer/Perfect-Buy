@@ -8,6 +8,7 @@ import { z } from "zod";
 import { StoreHeader } from "@/components/StoreHeader";
 import { products } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
+import { SHIPPING_FEE, SHIPPING_FEE_CENTS } from "@/lib/shipping";
 
 const checkoutInput = z.object({
   customer: z.object({
@@ -54,8 +55,8 @@ const createYocoCheckout = createServerFn({ method: "POST" })
     });
 
     const amount = verifiedItems.reduce(
-      (sum, line) => sum + line.product.price! * 100 * line.quantity,
-      0,
+      (sum, line) => sum + Math.round(line.product.price! * 100) * line.quantity,
+      SHIPPING_FEE_CENTS,
     );
     const orderReference = `PB-${Date.now().toString(36).toUpperCase()}`;
     const requestUrl = getRequestUrl();
@@ -85,6 +86,7 @@ const createYocoCheckout = createServerFn({ method: "POST" })
           customerEmail: data.customer.email,
           customerPhone: data.customer.phone,
           items: itemSummary,
+          shippingFee: SHIPPING_FEE.toFixed(2),
         },
       }),
     });
@@ -123,6 +125,7 @@ function money(value: number) {
 
 function CheckoutPage() {
   const { items, subtotal, setQuantity, clearCart } = useCart();
+  const total = subtotal + (items.length ? SHIPPING_FEE : 0);
   const { payment, order } = Route.useSearch();
   const [customer, setCustomer] = useState({ name: "", email: "", phone: "" });
   const [loading, setLoading] = useState(false);
@@ -294,13 +297,23 @@ function CheckoutPage() {
                 </label>
               </div>
               <div className="mt-6 border-t border-border pt-5">
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span>{money(subtotal)}</span>
-                </div>
+                <dl className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <dt>Subtotal</dt>
+                    <dd>{money(subtotal)}</dd>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <dt>Shipping</dt>
+                    <dd>{money(SHIPPING_FEE)}</dd>
+                  </div>
+                  <div className="flex justify-between border-t border-border pt-3 text-lg font-bold">
+                    <dt>Total</dt>
+                    <dd>{money(total)}</dd>
+                  </div>
+                </dl>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Delivery arrangements are confirmed separately. You will now continue to Yoco's
-                  secure payment page.
+                  Flat-rate shipping is R100 per order within South Africa, regardless of the items
+                  or quantity. Shipping is included in the total paid securely through Yoco.
                 </p>
               </div>
               {error && (
@@ -315,7 +328,7 @@ function CheckoutPage() {
                 className="btn-base btn-pink mt-5 w-full disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ShieldCheck className="h-4 w-4" />{" "}
-                {loading ? "Opening secure payment…" : `Pay ${money(subtotal)} securely`}
+                {loading ? "Opening secure payment…" : `Pay ${money(total)} securely`}
               </button>
               <p className="mt-3 text-center text-xs text-muted-foreground">
                 Payments are securely processed by Yoco.
