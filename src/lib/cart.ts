@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { getProduct } from "./catalog";
 
 export type CartItem = {
   productId: string;
@@ -17,7 +18,21 @@ function readCart(): CartItem[] {
   if (typeof window === "undefined") return [];
   try {
     const value = JSON.parse(window.localStorage.getItem(CART_KEY) ?? "[]");
-    return Array.isArray(value) ? value : [];
+    if (!Array.isArray(value)) return [];
+    return value.flatMap((item): CartItem[] => {
+      if (!item || typeof item.productId !== "string") return [];
+      const product = getProduct(item.productId);
+      if (product?.price === undefined || product.price <= 0) return [];
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) return [];
+      return [
+        {
+          ...item,
+          name: product.name,
+          price: product.price,
+          image: product.images[0],
+        },
+      ];
+    });
   } catch {
     return [];
   }

@@ -128,7 +128,7 @@ export const products: Product[] = [
   {
     id: "dessert-hand-lip-care-gift-box-orange",
     name: "Dessert Ice Cream Hand and Lip Care Gift Box — Orange",
-    price: 150,
+    price: 50,
     description:
       "A playful dessert-themed gift set pairing hand cream and lip care in bright orange packaging.",
     images: [photo("dessert-hand-lip-care-gift-box-orange")],
@@ -137,7 +137,7 @@ export const products: Product[] = [
   {
     id: "dessert-hand-lip-care-gift-box-blue",
     name: "Dessert Ice Cream Hand and Lip Care Gift Box — Blue",
-    price: 150,
+    price: 50,
     description:
       "A playful dessert-themed gift set pairing hand cream and lip care in bright blue packaging.",
     images: [photo("dessert-hand-lip-care-gift-box-blue")],
@@ -163,10 +163,10 @@ export const products: Product[] = [
   },
   {
     id: "fizz-bath-bombs-glow-in-the-dark-toys-6-piece",
-    name: "Fizz Bath Bombs with Glow-in-the-Dark Toys Inside — 6 Piece Set",
-    price: 199,
+    name: "Fizz Bath Bombs with Glow-in-the-Dark Toys Inside — 2 Piece Pack",
+    price: 145,
     description:
-      "A six-piece bath bomb set with a small glow-in-the-dark surprise toy inside each fizzy bath treat.",
+      "A pack of 2 bath bombs, each with a small glow-in-the-dark surprise toy inside. The photo shows assorted designs; each pack contains 2 bath bombs.",
     images: [photo("fizz-bath-bombs-glow-in-the-dark-toys-6-piece")],
     category: "gifts-toys",
   },
@@ -232,7 +232,7 @@ export const products: Product[] = [
   },
   {
     id: "cotton-road-perfume",
-    name: "Cotton Road Perfume",
+    name: "Iscents Perfume",
     price: 250,
     description: "A decorative floral perfume presented in a handbag-inspired bottle.",
     images: ["/products/cotton-road-perfume.webp"],
