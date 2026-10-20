@@ -1,5 +1,5 @@
 // One shipping fee per order, regardless of the products or quantities.
-export const SHIPPING_FEE_CENTS = 10_000;
+export const SHIPPING_FEE_CENTS = 11_000;
 export const SHIPPING_FEE = SHIPPING_FEE_CENTS / 100;
 
 // Merchant-selected booking values shared by all products; not individual product measurements.

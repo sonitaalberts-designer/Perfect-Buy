@@ -465,7 +465,7 @@ function CheckoutPage() {
                 <legend className="pt-5 text-lg font-semibold">PUDO collection locker</legend>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Search for your town or locker name, then select a collection locker from the list
-                  before paying. Shipping is R100 per order.
+                  before paying. Shipping is R110 per order.
                 </p>
                 <label className="mt-4 block text-sm font-medium">
                   Search by town, suburb or locker name
@@ -537,7 +537,7 @@ function CheckoutPage() {
                   </div>
                 </dl>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  PUDO locker-to-locker shipping is R100 per order within South Africa, regardless
+                  PUDO locker-to-locker shipping is R110 per order within South Africa, regardless
                   of the items or quantity. Collect from the locker selected above.
                 </p>
               </div>

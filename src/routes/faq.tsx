@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     q: "Where do you deliver?",
-    a: "We arrange delivery within South Africa. Shipping is R100 per order, regardless of the items or quantity, and is shown separately at checkout. Contact Perfect Buy on 071 463 2853 to confirm delivery availability and estimated timing for your address.",
+    a: "We arrange delivery within South Africa. Shipping is R110 per order, regardless of the items or quantity, and is shown separately at checkout. Contact Perfect Buy on 071 463 2853 to confirm delivery availability and estimated timing for your address.",
   },
   {
     q: "How do I know if something is in stock?",

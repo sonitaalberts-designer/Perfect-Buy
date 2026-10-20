@@ -357,7 +357,7 @@ function ProductPage() {
             <div>
               <h2 className="text-2xl tracking-tight">Before you order</h2>
               <p className="mt-5 leading-7 text-foreground/75">
-                Shipping is R100 per order. Confirm the exact style, size, availability and delivery
+                Shipping is R110 per order. Confirm the exact style, size, availability and delivery
                 timing for your South African address with Perfect Buy. Keep the product name handy
                 when asking about this listing.
               </p>

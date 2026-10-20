@@ -40,6 +40,17 @@ function perfectBuyOwnerEmailSettings(array $config): ?array {
     return ['to' => $to, 'from' => $from];
 }
 
+function perfectBuyCourierEmailSummary(array $order, bool $test = false): string {
+    if ($test) return 'Courier booking: TEST ONLY. No shipment has been created.';
+    $booking = is_array($order['courierBooking'] ?? null) ? $order['courierBooking'] : [];
+    return match ($booking['status'] ?? '') {
+        'booked' => 'Courier booking: confirmed. Tracking reference: ' . perfectBuyEmailText($booking['trackingReference'] ?? ''),
+        'processing', 'booking' => 'Courier booking: awaiting carrier confirmation. Do not drop off the parcel yet.',
+        'blocked', 'needs_review' => 'Courier booking: requires attention. Check the separate courier status email before arranging a shipment.',
+        default => 'Courier booking: not yet confirmed. Check for a separate courier booking/status email before dropping off the parcel.',
+    };
+}
+
 function perfectBuyOwnerEmailBody(array $order, bool $test = false): string {
     $customer = is_array($order['customer'] ?? null) ? $order['customer'] : [];
     $locker = is_array($order['collectionLocker'] ?? null) ? $order['collectionLocker'] : [];
@@ -81,7 +92,7 @@ function perfectBuyOwnerEmailBody(array $order, bool $test = false): string {
         'Address: ' . perfectBuyEmailText($locker['address'] ?? '', 600),
         '',
         'Parcel preset: Large (V4-L), 60 x 41 x 41 cm, 15 kg.',
-        'Courier booking: NOT created automatically. Arrange the shipment separately.',
+        perfectBuyCourierEmailSummary($order, $test),
         '',
         'Website: https://perfectbuy.co.za',
         'Keep customer details private. This message is for the shop owner only.'
@@ -181,6 +192,126 @@ function perfectBuyNotifyOwnerEmail(array &$order, string $orderPath, array $con
         return $save() ? 'pending_configuration' : 'persistence_failed';
     }
     return perfectBuyEmailAttempt($state, perfectBuyEmailMessage($order, $settings), $save, $transport, $now ?? time());
+}
+
+function perfectBuyCourierAttentionReason(string $code): string {
+    return match ($code) {
+        'products_require_carrier_review' => 'One or more products have not been approved for automatic courier booking. Review carrier acceptance before arranging delivery.',
+        'destination_locker_unavailable' => 'The selected collection locker is no longer available for a Large parcel. Confirm an available locker with the customer.',
+        'no_approved_rate_within_limit' => 'No approved Large locker service was quoted within the configured booking budget. Check the carrier quote before arranging delivery.',
+        'existing_shipment_requires_review' => 'A shipment with this order reference already exists and could not be safely matched. Check the carrier portal before creating another shipment.',
+        'carrier_booking_not_ready' => 'The carrier has not confirmed a usable booking. Check its payment, approval and shipment status in the carrier portal.',
+        'booking_outcome_unknown' => 'The carrier response was unclear. A shipment may already exist. Check the carrier portal before creating another shipment.',
+        default => 'Automatic courier processing needs review. Check the saved order and carrier portal before creating another shipment.',
+    };
+}
+
+function perfectBuyOwnerCourierEmailBody(array $order, array $courierConfig): string {
+    $booking = $order['courierBooking'];
+    $booked = $booking['status'] === 'booked';
+    $customer = is_array($order['customer'] ?? null) ? $order['customer'] : [];
+    $locker = is_array($order['collectionLocker'] ?? null) ? $order['collectionLocker'] : [];
+    $lines = [
+        $booked ? 'PERFECT BUY COURIER BOOKING CONFIRMED' : 'PERFECT BUY COURIER BOOKING NEEDS ATTENTION',
+        '',
+        'Order reference: ' . perfectBuyEmailText($order['reference']),
+        'Payment: confirmed. The payment status remains paid.',
+    ];
+    if ($booked) {
+        $lines[] = 'Tracking reference: ' . perfectBuyEmailText($booking['trackingReference'] ?? '');
+        $lines[] = 'Carrier shipment ID: ' . perfectBuyEmailText($booking['shipmentId'] ?? '');
+        $lines[] = 'Carrier status: ' . perfectBuyEmailText($booking['carrierStatus'] ?? '');
+        $lines[] = 'Drop-off: use any compatible Courier Guy locker and follow the carrier instructions.';
+        $lines[] = 'Drop-off PIN: The Courier Guy emails the sender separately at ' . perfectBuyEmailText($courierConfig['sender_contact']['email'] ?? '') . '. This email does not contain a PIN. Wait for the carrier instructions before dropping off.';
+    } else {
+        $lines[] = 'Automatic booking is paused; no further booking will be created automatically while this needs review.';
+        $lines[] = 'Reason: ' . perfectBuyCourierAttentionReason((string)($booking['lastErrorCode'] ?? ''));
+        $lines[] = 'Do not drop off the parcel or create a duplicate booking until the carrier status has been checked.';
+    }
+    array_push($lines,
+        '', 'CUSTOMER',
+        'Name: ' . perfectBuyEmailText($customer['name'] ?? ''),
+        'Email: ' . perfectBuyEmailText($customer['email'] ?? ''),
+        'Phone: ' . perfectBuyEmailText($customer['phone'] ?? ''),
+        '', 'ITEMS'
+    );
+    foreach (array_slice(is_array($order['items'] ?? null) ? $order['items'] : [], 0, 50) as $item) {
+        if (!is_array($item)) continue;
+        $lines[] = (int)($item['quantity'] ?? 0) . ' x ' . perfectBuyEmailText($item['name'] ?? '');
+        foreach (['size' => 'Size', 'color' => 'Colour'] as $key => $label) {
+            $option = perfectBuyEmailText($item[$key] ?? '');
+            if ($option !== '') $lines[] = '  ' . $label . ': ' . $option;
+        }
+    }
+    array_push($lines,
+        '', 'CUSTOMER COLLECTION / SHIPPING ADDRESS',
+        'PUDO locker: ' . perfectBuyEmailText($locker['name'] ?? ''),
+        'Locker ID: ' . perfectBuyEmailText($locker['id'] ?? ''),
+        'Address: ' . perfectBuyEmailText($locker['address'] ?? '', 600),
+        '', 'Shipping charged to customer: ' . perfectBuyEmailMoney((int)($order['shippingFeeCents'] ?? 0)),
+        'Parcel preset: Large (V4-L), 60 x 41 x 41 cm, 15 kg.',
+        '', 'Website: https://perfectbuy.co.za',
+        'Keep customer details private. This message is for the shop owner only.'
+    );
+    return implode("\n", $lines) . "\n";
+}
+
+function perfectBuyOwnerCourierEmailMessage(array $order, array $settings, array $courierConfig): array {
+    $reference = $order['reference'];
+    $booked = $order['courierBooking']['status'] === 'booked';
+    $senderDomain = substr($settings['from'], strrpos($settings['from'], '@') + 1);
+    $messageId = '<perfectbuy-courier-' . ($booked ? 'booked-' : 'attention-') . strtolower($reference) . '@' . $senderDomain . '>';
+    return [
+        'to' => $settings['to'], 'from' => $settings['from'], 'messageId' => $messageId,
+        'subject' => 'Perfect Buy courier ' . ($booked ? 'booked ' : 'needs attention ') . $reference,
+        'body' => perfectBuyOwnerCourierEmailBody($order, $courierConfig),
+        'headers' => implode("\r\n", [
+            'From: Perfect Buy Orders <' . $settings['from'] . '>',
+            'Reply-To: ' . $settings['to'],
+            'MIME-Version: 1.0', 'Content-Type: text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding: 8bit', 'Message-ID: ' . $messageId,
+            'Auto-Submitted: auto-generated',
+        ]),
+    ];
+}
+
+// A single attention notice and a single eventual booked notice per order.
+// The worker holds the same exclusive order lock used by the payment webhook.
+function perfectBuyNotifyOwnerCourierEmail(array &$order, string $orderPath, array $config, array $courierConfig, ?callable $transport = null, ?int $now = null): string {
+    if (($order['status'] ?? '') !== 'paid' || ($order['paymentMode'] ?? '') !== 'live' ||
+        !is_string($order['paymentId'] ?? null) || $order['paymentId'] === '' ||
+        !is_string($order['paymentEventId'] ?? null) || $order['paymentEventId'] === '' ||
+        !is_string($order['reference'] ?? null) || !preg_match('/^PB-[A-F0-9]{16}$/D', $order['reference']) ||
+        ($courierConfig['bookings_enabled'] ?? false) !== true) return 'ineligible';
+    $enabledAt = is_string($courierConfig['bookings_enabled_after'] ?? null) ? strtotime($courierConfig['bookings_enabled_after']) : false;
+    $paidAt = is_string($order['paidAt'] ?? null) ? strtotime($order['paidAt']) : false;
+    $approved = is_array($courierConfig['approved_order_references'] ?? null) && in_array($order['reference'], $courierConfig['approved_order_references'], true);
+    if (!$approved && ($enabledAt === false || $paidAt === false || $paidAt < $enabledAt)) return 'ineligible';
+    $bookingStatus = $order['courierBooking']['status'] ?? '';
+    if (!in_array($bookingStatus, ['booked', 'blocked', 'needs_review'], true)) return 'ineligible';
+    if ($bookingStatus === 'booked' &&
+        (!is_string($order['courierBooking']['trackingReference'] ?? null) || $order['courierBooking']['trackingReference'] === '' ||
+         !is_string($order['courierBooking']['shipmentId'] ?? null) || $order['courierBooking']['shipmentId'] === '')) return 'ineligible';
+    if (!isset($order['notifications']) || !is_array($order['notifications'])) $order['notifications'] = [];
+    $key = $bookingStatus === 'booked' ? 'ownerCourierBooked' : 'ownerCourierAttention';
+    if (!isset($order['notifications'][$key]) || !is_array($order['notifications'][$key])) {
+        $order['notifications'][$key] = ['status' => 'pending', 'attempts' => 0];
+    }
+    $state =& $order['notifications'][$key];
+    $save = static function () use (&$order, $orderPath): bool { return perfectBuyNotificationWrite($orderPath, $order); };
+    if (($state['status'] ?? '') === 'sent') return 'sent';
+    if (in_array($state['status'] ?? '', ['sending', 'needs_review'], true)) {
+        $state['status'] = 'needs_review';
+        $state['lastErrorCode'] = $state['lastErrorCode'] ?? 'previous_send_outcome_unknown';
+        return $save() ? 'needs_review' : 'persistence_failed';
+    }
+    $settings = perfectBuyOwnerEmailSettings($config);
+    if (($config['owner_email_enabled'] ?? false) !== true || $settings === null) {
+        $state['status'] = 'pending_configuration';
+        $state['lastErrorCode'] = $settings === null ? 'invalid_email_configuration' : 'email_disabled';
+        return $save() ? 'pending_configuration' : 'persistence_failed';
+    }
+    return perfectBuyEmailAttempt($state, perfectBuyOwnerCourierEmailMessage($order, $settings, $courierConfig), $save, $transport, $now ?? time());
 }
 
 function perfectBuySendOwnerEmailTest(string $privateDirectory, array $config, ?callable $transport = null, ?int $now = null): string {

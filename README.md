@@ -59,7 +59,7 @@ product options and quantities, and calculates totals from its generated server
 catalog. Without a configured key it returns a clear 503 message and never
 starts a payment. PHP 8+ with cURL and outbound HTTPS is required.
 
-Checkout shows a separate R100 shipping line and adds it once per order to the
+Checkout shows a separate R110 shipping line and adds it once per order to the
 server-calculated Yoco amount, regardless of the products or quantities. Both
 checkout runtimes enforce the same fixed fee; browser-supplied totals are ignored.
 
@@ -83,9 +83,22 @@ as `.perfectbuy-courier.php` (0600), then set the API key there. River Square Ma
 On Vercel, set `COURIER_GUY_API_KEY` as a server-only environment variable; paid
 order storage and mail/webhook configuration there require a durable database.
 
-Automatic Courier Guy bookings remain disabled. Every product uses the merchant-selected Large booking preset: 60 × 41 × 41 cm
+Automatic Courier Guy bookings default to disabled. Every product uses the merchant-selected Large booking preset: 60 × 41 × 41 cm
 and 15 kg per parcel. These are declared booking values, not product measurements.
-Checkout saves this preset with each order; verified payment is required before booking. Do not describe bookings or email alerts as active.
+Checkout saves this preset with each order; verified live payment is required before booking.
+The private one-minute worker can book a reviewed order after `bookings_enabled`
+is enabled in `.perfectbuy-courier.php`. Configure a real `bookings_enabled_after`
+activation timestamp, sender contact, `account_currency` (`ZAR`), the exact Large
+service code (`L2LL - ECO`), and an explicit `approved_product_ids` allowlist.
+The example caps VAT-inclusive carrier cost at R110 (`max_booking_cost_cents` =
+11000); a missing cap defaults to R100. Higher quotes are blocked for review.
+Unreviewed products, including restricted perfumes/liquids/jewellery, require
+carrier acceptance review before their catalog IDs may enter the allowlist.
+Historic paid orders are excluded unless specifically reviewed and listed in
+`approved_order_references`; this never bypasses product, payment or rate checks.
+The carrier account must email the sender for `awaiting-dropoff` notifications.
+Shipment creation requests enable carrier notifications. The owner receives the
+drop-off PIN from the carrier separately; the website never invents a PIN.
 
 Rebuild and upload after editing products or pages. Point the domain's website
 records to the hosting account's shared IP and issue an SSL certificate before
@@ -147,7 +160,18 @@ The production setup and one-minute retry worker were installed on 20 October
 2026; the labelled sample email was received and opened in the Titan inbox.
 This verifies email delivery, not a new real card payment.
 
-Courier booking remains in `pending_configuration`; no shipment is created.
+Courier booking is separate from payment confirmation. The worker calls the
+private `courier-fulfillment.php` helper while holding the same exclusive order
+lock, after attempting the immediate paid-order email. It stores a booking intent
+before contacting the carrier, then sends a separate owner email for a confirmed
+booking or a booking requiring attention. Accepted emails are durable and do not
+repeat; an attention notice and a later confirmed-booking notice are separate
+events. Disabled and pre-activation orders do not emit courier notices. A timeout
+or uncertain carrier response is reconciled with read-only lookups, never a blind
+repeat shipment creation. Payment remains paid if courier processing fails.
+Deploy all files in `hosting/cpanel/lib/` together outside `public_html`; deployment
+alone does not activate bookings. Confirm private configuration before describing
+automatic shipment booking as live.
 The production domain is verified, test/live subscriptions are registered, private
 configuration is installed, and an actual Yoco sandbox callback has marked its
 isolated test order paid. Live checkout is enabled; no real payment was made

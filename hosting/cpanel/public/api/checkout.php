@@ -67,7 +67,7 @@ $catalog = json_decode(file_get_contents(__DIR__ . '/catalog.json'), true);
 if (!is_array($catalog)) failCheckout(503, 'Secure checkout is temporarily unavailable.');
 $catalogById = array_column($catalog, null, 'id');
 // Charge shipping once per order; never accept a browser-supplied shipping amount.
-$shippingFeeCents = 10000;
+$shippingFeeCents = 11000;
 $amount = $shippingFeeCents;
 $summary = [];
 $orderItems = [];

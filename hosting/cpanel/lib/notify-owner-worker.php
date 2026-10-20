@@ -8,10 +8,14 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 require_once __DIR__ . '/owner-notifications.php';
+require_once __DIR__ . '/courier-fulfillment.php';
 $home = getenv('HOME') ?: '/home/houseofcreat';
 $configPath = $home . '/.perfectbuy-notifications.php';
 $config = is_file($configPath) ? require $configPath : [];
 if (!is_array($config)) $config = [];
+$courierConfigPath = $home . '/.perfectbuy-courier.php';
+$courierConfig = is_file($courierConfigPath) ? require $courierConfigPath : [];
+if (!is_array($courierConfig)) $courierConfig = [];
 $privateDirectory = $home . '/.perfectbuy-notifications';
 
 if (in_array('--test', $argv ?? [], true)) {
@@ -38,6 +42,19 @@ foreach (glob($directory . '/PB-*.json') ?: [] as $path) {
     if (is_array($order) && ($order['reference'] ?? '') === $reference) {
         $result = perfectBuyNotifyOwnerEmail($order, $path, $config);
         $counts[$result] = ($counts[$result] ?? 0) + 1;
+        // Keep the paid-order email immediate. Booking is handled only by this
+        // private worker, never in Yoco's time-sensitive payment webhook.
+        try {
+            $courierResult = perfectBuyFulfillCourier($order, $path, $courierConfig);
+            $counts['courier_' . $courierResult] = ($counts['courier_' . $courierResult] ?? 0) + 1;
+            $courierEmailResult = perfectBuyNotifyOwnerCourierEmail($order, $path, $config, $courierConfig);
+            if ($courierEmailResult !== 'ineligible') {
+                $counts['courier_email_' . $courierEmailResult] = ($counts['courier_email_' . $courierEmailResult] ?? 0) + 1;
+            }
+        } catch (Throwable $error) {
+            // No raw carrier errors, secrets or customer data in cron output.
+            $counts['courier_worker_error'] = ($counts['courier_worker_error'] ?? 0) + 1;
+        }
     }
     flock($lock, LOCK_UN); fclose($lock);
 }
