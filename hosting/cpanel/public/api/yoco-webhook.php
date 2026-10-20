@@ -11,6 +11,20 @@ function webhookReply(int $status, string $message): void {
     exit;
 }
 
+function notifyPaidOrderOwner(array &$order, string $path, string $home): void {
+    $library = $home . '/.perfectbuy-notifications/owner-notifications.php';
+    if (!is_file($library)) return;
+    try {
+        require_once $library;
+        $notificationConfigPath = $home . '/.perfectbuy-notifications.php';
+        $notificationConfig = is_file($notificationConfigPath) ? require $notificationConfigPath : [];
+        perfectBuyNotifyOwnerEmail($order, $path, is_array($notificationConfig) ? $notificationConfig : []);
+    } catch (Throwable $error) {
+        // Payment is already durable. The private worker retries pending email separately.
+        error_log('Perfect Buy owner email requires review.');
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Allow: POST');
     webhookReply(405, 'POST required.');
@@ -67,6 +81,7 @@ if (!is_array($order) || ($order['checkoutId'] ?? '') !== $checkoutId ||
 }
 if (($order['status'] ?? '') === 'paid') {
     $samePayment = ($order['paymentId'] ?? '') === $payment['id'];
+    if ($samePayment) notifyPaidOrderOwner($order, $path, $home);
     flock($lock, LOCK_UN); fclose($lock);
     webhookReply($samePayment ? 200 : 409, $samePayment ? 'Payment already recorded.' : 'Different payment already recorded.');
 }
@@ -82,6 +97,7 @@ $oldMask = umask(0077);
 $temporary = $path . '.' . bin2hex(random_bytes(6)) . '.tmp';
 $saved = @file_put_contents($temporary, json_encode($order), LOCK_EX) !== false && @rename($temporary, $path);
 umask($oldMask);
+if ($saved) notifyPaidOrderOwner($order, $path, $home);
 flock($lock, LOCK_UN); fclose($lock);
 if (!$saved) webhookReply(503, 'Please retry payment confirmation.');
 webhookReply(200, 'Payment recorded.');

@@ -63,9 +63,13 @@ Checkout shows a separate R100 shipping line and adds it once per order to the
 server-calculated Yoco amount, regardless of the products or quantities. Both
 checkout runtimes enforce the same fixed fee; browser-supplied totals are ignored.
 
-The owner requested detailed paid-order notifications to `orders@perfect-buy.co.za`
-(Titan Mail). These notifications are not connected yet: the verified Yoco payment trigger is
-ready, but a configured mail sender and notification delivery worker are still required. cPanel now saves customer,
+The owner receives detailed paid-order notifications at `orders@perfect-buy.co.za`
+(Titan Mail) after a verified live Yoco payment. Deploy `hosting/cpanel/lib/` privately as
+`/home/houseofcreat/.perfectbuy-notifications/`, and configure the sender in
+`/home/houseofcreat/.perfectbuy-notifications.php` (see the example file). The existing
+authenticated hosting sender is `houseofcreat@houseofcreativess.co.za`, displayed as
+Perfect Buy Orders, with replies directed to the Titan inbox. No Titan password is
+needed to receive messages. cPanel saves customer,
 product, option, amount and verified locker details in private 0600 JSON files under
 `/home/houseofcreat/.perfectbuy-orders`, with status `awaiting_payment`. A browser
 success redirect never marks these records paid or books a shipment.
@@ -131,8 +135,20 @@ save make duplicate payment notifications idempotent. The checkout endpoint save
 a private checkout-id index before returning its payment URL.
 
 Only a verified matching `payment.succeeded` marks an order paid. This handler
-currently leaves courier booking and email delivery in `pending_configuration`;
-it does not send notifications or create a shipment. The production domain is verified, test/live subscriptions are registered, private
+sends the owner's email after the payment record is saved, while holding the order
+lock. The private worker retries rejected emails with backoff. A repeat callback
+does not resend an accepted email; ambiguous sends require review. Email failure
+never reverses payment. Run the worker every minute:
+`/usr/local/bin/php /home/houseofcreat/.perfectbuy-notifications/notify-owner-worker.php >/dev/null 2>&1`.
+Its `--test` option sends one clearly labelled sample email with no payment or real
+order; a private marker suppresses repeats. Server acceptance is distinct from
+inbox delivery, which must be checked in Titan or Track Delivery.
+The production setup and one-minute retry worker were installed on 20 October
+2026; the labelled sample email was received and opened in the Titan inbox.
+This verifies email delivery, not a new real card payment.
+
+Courier booking remains in `pending_configuration`; no shipment is created.
+The production domain is verified, test/live subscriptions are registered, private
 configuration is installed, and an actual Yoco sandbox callback has marked its
 isolated test order paid. Live checkout is enabled; no real payment was made
 during verification. The merchant has selected the same Large preset for every parcel: 60 × 41 × 41 cm
