@@ -46,13 +46,14 @@ type YocoCheckoutResponse = {
   id?: string;
   redirectUrl?: string;
   message?: string;
+  processingMode?: string;
 };
 
 const createYocoCheckout = createServerFn({ method: "POST" })
   .validator(checkoutInput)
   .handler(async ({ data }) => {
     const secretKey = process.env["YOCO_SECRET_KEY"];
-    if (!secretKey)
+    if (!secretKey?.startsWith("sk_live_"))
       throw new Error("Secure checkout is still being configured. Please try again soon.");
 
     const { getCollectionLockers } = await import("@/lib/courier.server");
@@ -114,7 +115,7 @@ const createYocoCheckout = createServerFn({ method: "POST" })
     });
 
     const payload = (await response.json().catch(() => ({}))) as YocoCheckoutResponse;
-    if (!response.ok || !payload.redirectUrl) {
+    if (!response.ok || !payload.redirectUrl || payload.processingMode !== "live") {
       console.error("Yoco checkout creation failed", response.status, payload.message);
       throw new Error("We couldn't start secure payment. Please try again.");
     }
@@ -157,6 +158,9 @@ function CheckoutPage() {
   const [locker, setLocker] = useState<CollectionLocker | null>(null);
   const [lockerError, setLockerError] = useState("");
   const [searching, setSearching] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"checking" | "paid" | "unconfirmed">(
+    "checking",
+  );
 
   useEffect(() => {
     let active = true;
@@ -198,8 +202,44 @@ function CheckoutPage() {
   }, [lockerQuery]);
 
   useEffect(() => {
-    if (payment === "success") clearCart();
-  }, [payment, clearCart]);
+    if (payment !== "success") return;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    let attempts = 0;
+    async function verify() {
+      try {
+        const token = order ? window.sessionStorage.getItem(`pb-receipt:${order}`) : null;
+        if (!token || import.meta.env["VITE_HOSTING_TARGET"] !== "cpanel") {
+          if (active) setPaymentStatus("unconfirmed");
+          return;
+        }
+        const response = await fetch("/api/order-status.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderReference: order, receiptToken: token }),
+          signal: AbortSignal.timeout(8000),
+        });
+        const result = await response.json();
+        if (!active) return;
+        if (response.ok && result.status === "paid") {
+          setPaymentStatus("paid");
+          clearCart();
+        } else if (response.ok && ++attempts < 10) {
+          timer = setTimeout(verify, 2000);
+        } else {
+          setPaymentStatus("unconfirmed");
+        }
+      } catch {
+        if (active) setPaymentStatus("unconfirmed");
+      }
+    }
+    setPaymentStatus("checking");
+    void verify();
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [payment, order, clearCart]);
 
   async function pay() {
     setError("");
@@ -219,6 +259,9 @@ function CheckoutPage() {
         import.meta.env["VITE_HOSTING_TARGET"] === "cpanel"
           ? await createCpanelCheckout(data)
           : await createYocoCheckout({ data });
+      if ("receiptToken" in result && typeof result.receiptToken === "string") {
+        window.sessionStorage.setItem(`pb-receipt:${result.orderReference}`, result.receiptToken);
+      }
       window.location.assign(result.redirectUrl);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "We couldn't start secure payment.");
@@ -233,11 +276,26 @@ function CheckoutPage() {
         <main className="shell py-16">
           <div className="mx-auto max-w-xl rounded-xl border border-border bg-white p-8 text-center shadow-soft">
             <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
-            <h1 className="mt-4 text-3xl">Thank you for your order</h1>
+            <h1 className="mt-4 text-3xl">
+              {paymentStatus === "paid"
+                ? "Payment confirmed — thank you"
+                : paymentStatus === "checking"
+                  ? "Checking your payment"
+                  : "Payment not confirmed"}
+            </h1>
             <p className="mt-3 text-muted-foreground">
-              Your payment was submitted securely through Yoco.
+              {paymentStatus === "paid"
+                ? "Yoco has confirmed your payment. Your order has been received."
+                : paymentStatus === "checking"
+                  ? "Please wait while we check Yoco’s payment confirmation."
+                  : "We cannot yet confirm payment for this order. Please do not pay again until Perfect Buy has checked its status."}
             </p>
             {order && <p className="mt-2 text-sm font-semibold">Order reference: {order}</p>}
+            {paymentStatus === "unconfirmed" && (
+              <a className="mt-4 block font-semibold text-primary" href="tel:+27714632853">
+                Contact Perfect Buy: 071 463 2853
+              </a>
+            )}
             <Link to="/shop" className="btn-base btn-pink mt-7">
               Continue shopping
             </Link>
@@ -481,5 +539,5 @@ async function createCpanelCheckout(data: z.infer<typeof checkoutInput>) {
   if (!response.ok || typeof result.redirectUrl !== "string") {
     throw new Error(result.error || "We couldn't start secure payment. Please try again.");
   }
-  return result as { redirectUrl: string };
+  return result as { redirectUrl: string; orderReference: string; receiptToken: string };
 }

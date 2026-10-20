@@ -97,10 +97,12 @@ foreach ($items as $item) {
 }
 
 $secret = $config['yoco_secret_key'] ?? getenv('YOCO_SECRET_KEY');
-if (($config['payments_enabled'] ?? false) !== true || !$secret || !function_exists('curl_init')) {
+if (($config['payments_enabled'] ?? false) !== true || !is_string($secret) ||
+    !str_starts_with($secret, 'sk_live_') || !function_exists('curl_init')) {
     failCheckout(503, 'Secure checkout is still being configured. Please try again soon.');
 }
 $reference = 'PB-' . strtoupper(bin2hex(random_bytes(8)));
+$receiptToken = bin2hex(random_bytes(32));
 $orderDirectory = $home . '/.perfectbuy-orders';
 $oldMask = umask(0077);
 if (!is_dir($orderDirectory)) @mkdir($orderDirectory, 0700, true);
@@ -112,6 +114,7 @@ $orderRecord = [
     'senderLocker' => $senderLocker, 'collectionLocker' => $locker,
     'requestedParcelClass' => 'V4-L', 'fulfillmentStatus' => 'not_booked',
     'parcelPreset' => perfectBuyParcelPreset(),
+    'receiptTokenHash' => hash('sha256', $receiptToken),
 ];
 $saved = @file_put_contents($orderPath, json_encode($orderRecord), LOCK_EX);
 umask($oldMask);
@@ -150,7 +153,7 @@ $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
 curl_close($curl);
 $result = is_string($body) ? json_decode($body, true) : null;
 $redirect = is_array($result) ? ($result['redirectUrl'] ?? null) : null;
-if ($status < 200 || $status >= 300 || !is_string($redirect) ||
+if ($status < 200 || $status >= 300 || ($result['processingMode'] ?? '') !== 'live' || !is_string($redirect) ||
     !filter_var($redirect, FILTER_VALIDATE_URL) || parse_url($redirect, PHP_URL_SCHEME) !== 'https') {
     failCheckout(502, "We couldn't start secure payment. Please try again.");
 }
@@ -166,4 +169,4 @@ $oldMask = umask(0077);
 $indexSaved = @file_put_contents($orderDirectory . '/checkout-' . hash('sha256', $checkoutId) . '.ref', $reference, LOCK_EX);
 umask($oldMask);
 if ($indexSaved === false) failCheckout(503, 'We could not save your payment reference. Please try again later.');
-echo json_encode(['redirectUrl' => $redirect, 'checkoutId' => $result['id'] ?? null, 'orderReference' => $reference]);
+echo json_encode(['redirectUrl' => $redirect, 'checkoutId' => $result['id'] ?? null, 'orderReference' => $reference, 'receiptToken' => $receiptToken]);
