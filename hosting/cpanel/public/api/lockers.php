@@ -18,11 +18,9 @@ if (!is_string($query) || strlen($query) > 80) {
 $query = trim($query);
 if (strlen($query) < 2) { echo json_encode(['lockers' => []]); exit; }
 require_once __DIR__ . '/courier.php';
+require_once __DIR__ . '/locker-search.php';
 try {
-    $matches = array_values(array_filter(perfectBuyCollectionLockers(), function ($locker) use ($query) {
-        return stripos($locker['name'] . ' ' . $locker['address'], $query) !== false;
-    }));
-    echo json_encode(['lockers' => array_slice($matches, 0, 40)]);
+    echo json_encode(perfectBuySearchCollectionLockers(perfectBuyCollectionLockers(), $query));
 } catch (RuntimeException $error) {
     http_response_code(503);
     echo json_encode(['error' => $error->getMessage()]);

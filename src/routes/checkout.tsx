@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestUrl } from "@tanstack/react-start/server";
@@ -9,7 +9,11 @@ import { StoreHeader } from "@/components/StoreHeader";
 import { products } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { PARCEL_PRESET, SHIPPING_FEE, SHIPPING_FEE_CENTS } from "@/lib/shipping";
-import type { CollectionLocker } from "@/lib/lockers";
+import {
+  searchCollectionLockers,
+  type CollectionLocker,
+  type LockerSearchResult,
+} from "@/lib/lockers";
 
 const checkoutInput = z.object({
   lockerId: z.string().min(1, "Please choose your collection locker.").max(100),
@@ -35,11 +39,7 @@ const searchLockers = createServerFn({ method: "GET" })
   .validator(z.string().trim().min(2).max(80))
   .handler(async ({ data }) => {
     const { getCollectionLockers } = await import("@/lib/courier.server");
-    return (await getCollectionLockers())
-      .filter((locker) =>
-        `${locker.name} ${locker.address}`.toLowerCase().includes(data.toLowerCase()),
-      )
-      .slice(0, 40);
+    return searchCollectionLockers(await getCollectionLockers(), data);
   });
 
 type YocoCheckoutResponse = {
@@ -157,7 +157,11 @@ function CheckoutPage() {
   const [lockers, setLockers] = useState<CollectionLocker[]>([]);
   const [locker, setLocker] = useState<CollectionLocker | null>(null);
   const [lockerError, setLockerError] = useState("");
+  const [lockerSearchHint, setLockerSearchHint] = useState("");
   const [searching, setSearching] = useState(false);
+  const customerDetailsRef = useRef<HTMLDivElement>(null);
+  const lockerSearchRef = useRef<HTMLInputElement>(null);
+  const lockerSelectRef = useRef<HTMLSelectElement>(null);
   const [paymentStatus, setPaymentStatus] = useState<"checking" | "paid" | "unconfirmed">(
     "checking",
   );
@@ -167,23 +171,35 @@ function CheckoutPage() {
     const query = lockerQuery.trim();
     if (query.length < 2) {
       setLockers([]);
+      setLockerSearchHint("");
       setSearching(false);
       return;
     }
     setSearching(true);
     setLockerError("");
+    setLockerSearchHint("");
     const timer = window.setTimeout(async () => {
       try {
-        let results: CollectionLocker[];
+        let result: LockerSearchResult;
         if (import.meta.env["VITE_HOSTING_TARGET"] === "cpanel") {
           const response = await fetch(`/api/lockers.php?q=${encodeURIComponent(query)}`);
-          const result = await response.json();
-          if (!response.ok) throw new Error(result.error || "We couldn't load collection lockers.");
-          results = result.lockers;
+          const payload = await response.json();
+          if (!response.ok)
+            throw new Error(payload.error || "We couldn't load collection lockers.");
+          result = payload;
         } else {
-          results = await searchLockers({ data: query });
+          result = await searchLockers({ data: query });
         }
-        if (active) setLockers(results);
+        if (active) {
+          setLockers(result.lockers);
+          setLockerSearchHint(
+            result.matchType === "area"
+              ? `Showing lockers around ${result.matchedArea || "your area"}. Choose your preferred collection locker below.`
+              : result.lockers.length
+                ? "Lockers found. Select your collection locker from the list below."
+                : "",
+          );
+        }
       } catch (cause) {
         if (active) {
           setLockers([]);
@@ -243,6 +259,24 @@ function CheckoutPage() {
 
   async function pay() {
     setError("");
+    if (!customer.name.trim() || !customer.email.trim() || !customer.phone.trim()) {
+      setError(
+        "Enter your name, email address and phone number above before continuing to payment.",
+      );
+      customerDetailsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    if (searching) {
+      setError("Please wait for the locker search to finish, then choose your collection locker.");
+      return;
+    }
+    if (!locker) {
+      setError(
+        "Choose a PUDO collection locker above before continuing to payment. Search for your town or locker name, then select a locker from the list.",
+      );
+      (lockerSelectRef.current || lockerSearchRef.current)?.focus();
+      return;
+    }
     setLoading(true);
     try {
       const data = checkoutInput.parse({
@@ -264,7 +298,13 @@ function CheckoutPage() {
       }
       window.location.assign(result.redirectUrl);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "We couldn't start secure payment.");
+      setError(
+        cause instanceof z.ZodError
+          ? "Please check your name, email address and phone number, then try again."
+          : cause instanceof Error
+            ? cause.message
+            : "We couldn't start secure payment.",
+      );
       setLoading(false);
     }
   }
@@ -387,7 +427,7 @@ function CheckoutPage() {
 
             <section className="h-fit rounded-xl border border-border bg-white p-6 shadow-soft">
               <h2 className="text-2xl">Checkout details</h2>
-              <div className="mt-5 space-y-4">
+              <div ref={customerDetailsRef} className="mt-5 space-y-4">
                 <label className="block text-sm font-medium">
                   Full name
                   <input
@@ -424,11 +464,13 @@ function CheckoutPage() {
               <fieldset className="mt-6 border-t border-border pt-5">
                 <legend className="pt-5 text-lg font-semibold">PUDO collection locker</legend>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Choose where you will collect your parcel. Shipping is R100 per order.
+                  Search for your town or locker name, then select a collection locker from the list
+                  before paying. Shipping is R100 per order.
                 </p>
                 <label className="mt-4 block text-sm font-medium">
                   Search by town, suburb or locker name
                   <input
+                    ref={lockerSearchRef}
                     type="search"
                     maxLength={80}
                     value={lockerQuery}
@@ -445,14 +487,16 @@ function CheckoutPage() {
                   {searching
                     ? "Finding collection lockers…"
                     : lockerError ||
+                      lockerSearchHint ||
                       (lockerQuery.trim().length >= 2 && !lockers.length
-                        ? "No lockers found. Try a nearby suburb or town."
+                        ? "No lockers found. Search for just your town or a nearby locker name, for example Three Rivers or River Square."
                         : "")}
                 </div>
                 {lockers.length > 0 && (
                   <label className="mt-3 block text-sm font-medium">
                     Choose your collection locker
                     <select
+                      ref={lockerSelectRef}
                       required
                       value={locker?.id || ""}
                       onChange={(event) =>
@@ -502,16 +546,14 @@ function CheckoutPage() {
                   {error}
                 </p>
               )}
+              {!locker && !error && (
+                <p className="mt-4 text-sm font-medium text-primary">
+                  Select your PUDO collection locker above to continue to payment.
+                </p>
+              )}
               <button
                 type="button"
-                disabled={
-                  loading ||
-                  !customer.name ||
-                  !customer.email ||
-                  !customer.phone ||
-                  !locker ||
-                  searching
-                }
+                disabled={loading}
                 onClick={pay}
                 className="btn-base btn-pink mt-5 w-full disabled:cursor-not-allowed disabled:opacity-50"
               >
